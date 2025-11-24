@@ -27,4 +27,9 @@ public class AuthController {
                 .orElse(ResponseEntity.status(401).body("Identifiants incorrects"));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("Logout successful");
+    }
 }
