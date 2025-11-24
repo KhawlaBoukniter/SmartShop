@@ -32,7 +32,7 @@ public class Commande {
     private BigDecimal montantRestant;
 
     @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL)
-    private List<OrderItem> orders;
+    private List<OrderItem> items;
 
     @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL)
     private List<Payment> payments;
