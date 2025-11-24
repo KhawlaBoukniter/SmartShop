@@ -12,12 +12,12 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "commande_id")
+    @ManyToOne
+    @JoinColumn(name = "commande_id", nullable = false)
     private Commande commande;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     private Integer quantity;

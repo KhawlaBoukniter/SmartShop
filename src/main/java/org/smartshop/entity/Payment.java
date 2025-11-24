@@ -15,12 +15,12 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "commande_id")
+    @ManyToOne
+    @JoinColumn(name = "commande_id", nullable = false)
     private Commande commande;
 
     private Integer number;
-    private BigDecimal price;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;
