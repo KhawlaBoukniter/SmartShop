@@ -19,6 +19,11 @@ public class GlobalExceptionHandler {
         return details(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(RessourceNotFoundException.class)
+    public ResponseEntity<Map<String,Object>> handleRessourceNotFoundException(RessourceNotFoundException ex, HttpServletRequest request) {
+        return details(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     private  ResponseEntity<Map<String,Object>> details(HttpStatus status, String message, HttpServletRequest request) {
         Map<String,Object> response = Map.of(
                 "timestamp", LocalDateTime.now(),
