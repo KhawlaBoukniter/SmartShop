@@ -2,10 +2,10 @@ package org.smartshop.controller;
 
 import jakarta.servlet.http.HttpSession;
 import org.smartshop.dto.LoginRequestDTO;
-import org.smartshop.entity.User;
 import org.smartshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +18,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO request, HttpSession session) {
         return userRepository.findByUsername(request.getUsername())
-                .filter(user -> org.springframework.security.crypto.bcrypt.BCrypt.checkpw(request.getPassword(), user.getPassword()))
+                .filter(user -> BCrypt.checkpw(request.getPassword(), user.getPassword()))
                 .map(user -> {
                     session.setAttribute("userId", user.getId());
                     session.setAttribute("role", user.getRole().name());
