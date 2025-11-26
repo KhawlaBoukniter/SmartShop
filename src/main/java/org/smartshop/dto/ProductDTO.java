@@ -1,5 +1,6 @@
 package org.smartshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long id;
+
     @NotBlank(groups = Creation.class, message = "Le nom du produit est obligatoire")
     private String name;
 
