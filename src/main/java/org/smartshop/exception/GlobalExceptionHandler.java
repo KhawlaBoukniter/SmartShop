@@ -24,6 +24,11 @@ public class GlobalExceptionHandler {
         return details(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String,Object>> handleBusinessException(BusinessException ex, HttpServletRequest request) {
+        return details(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request);
+    }
+
     private  ResponseEntity<Map<String,Object>> details(HttpStatus status, String message, HttpServletRequest request) {
         Map<String,Object> response = Map.of(
                 "timestamp", LocalDateTime.now(),
