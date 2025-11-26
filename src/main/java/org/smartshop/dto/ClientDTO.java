@@ -19,6 +19,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClientDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long id;
+
     @NotBlank(groups = Creation.class, message = "Le nom d'utilisateur est obligatoire")
     private String username;
 
