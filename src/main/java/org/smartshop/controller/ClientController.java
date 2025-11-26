@@ -2,9 +2,12 @@ package org.smartshop.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.smartshop.dto.ClientDTO;
+import org.smartshop.dto.Validation.Creation;
+import org.smartshop.dto.Validation.Update;
 import org.smartshop.service.ClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +20,7 @@ public class ClientController {
     private final ClientService clientService;
 
     @PostMapping
-    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) {
+    public ResponseEntity<ClientDTO> createClient(@Validated(Creation.class) @RequestBody ClientDTO clientDTO) {
         return new ResponseEntity<>(clientService.createClient(clientDTO), HttpStatus.CREATED);
     }
 
@@ -32,7 +35,7 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id,@Validated(Update.class) @RequestBody ClientDTO clientDTO) {
         return ResponseEntity.ok(clientService.updateClient(id, clientDTO));
     }
 
