@@ -7,6 +7,7 @@ import org.smartshop.entity.Product;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "price", source = "price")
     ProductDTO toDTO(Product product);
 
