@@ -8,7 +8,14 @@ import java.math.BigDecimal;
 
 @Entity
 @Data
-public class Client extends User {
+public class Client {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
     private String name;
 
