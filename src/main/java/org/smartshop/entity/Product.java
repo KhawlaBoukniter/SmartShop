@@ -16,7 +16,7 @@ public class Product {
     private Long id;
 
     private String name;
-    private BigDecimal UnitPrice;
+    private BigDecimal price;
     private Integer stock;
     private Boolean deleted;
 }
