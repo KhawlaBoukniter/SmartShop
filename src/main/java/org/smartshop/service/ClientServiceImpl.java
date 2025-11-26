@@ -3,7 +3,7 @@ package org.smartshop.service;
 import org.smartshop.dto.ClientDTO;
 import org.smartshop.entity.Client;
 import org.smartshop.enums.CustomerTier;
-import org.smartshop.exception.RessourceNotFoundException;
+import org.smartshop.exception.ResourceNotFoundException;
 import org.smartshop.mapper.ClientMapper;
 import org.smartshop.repository.ClientRepository;
 import org.smartshop.repository.UserRepository;
@@ -36,7 +36,7 @@ public class ClientServiceImpl implements ClientService{
     }
 
     public ClientDTO updateClient(Long id, ClientDTO clientDTO) {
-        Client client = clientRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException("Aucun client trouvé avec id : " + clientDTO.getId()));
+        Client client = clientRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aucun client trouvé avec id : " + clientDTO.getId()));
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
         return clientMapper.toDTO(clientRepository.save(client));
@@ -44,13 +44,13 @@ public class ClientServiceImpl implements ClientService{
 
     public void deleteClient(Long id) {
         if (!clientRepository.existsById(id)) {
-            throw new RessourceNotFoundException("Aucun client trouvé avec id : " + id);
+            throw new ResourceNotFoundException("Aucun client trouvé avec id : " + id);
         }
         clientRepository.deleteById(id);
     }
 
     public ClientDTO getClient(Long id) {
-        Client client = clientRepository.findById(id).orElseThrow(() -> new RessourceNotFoundException("Aucun client trouvé avec id : " + id));
+        Client client = clientRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aucun client trouvé avec id : " + id));
         return clientMapper.toDTO(client);
     }
 
