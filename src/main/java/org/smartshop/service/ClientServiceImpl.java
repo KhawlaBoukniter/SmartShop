@@ -35,7 +35,7 @@ public class ClientServiceImpl implements ClientService{
     }
 
     public ClientDTO updateClient(Long id, ClientDTO clientDTO) {
-        Client client = clientRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aucun client trouvé avec id : " + clientDTO.getId()));
+        Client client = clientRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aucun client trouvé avec id : " + id));
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
         return clientMapper.toDTO(clientRepository.save(client));
