@@ -3,6 +3,7 @@ package org.smartshop.service;
 import org.smartshop.dto.ClientDTO;
 import org.smartshop.entity.Client;
 import org.smartshop.enums.CustomerTier;
+import org.smartshop.enums.UserRole;
 import org.smartshop.exception.ResourceNotFoundException;
 import org.smartshop.mapper.ClientMapper;
 import org.smartshop.repository.ClientRepository;
@@ -28,6 +29,7 @@ public class ClientServiceImpl implements ClientService{
     public ClientDTO createClient(ClientDTO clientDTO) {
         Client client = clientMapper.toEntity(clientDTO);
         client.setPassword(BCrypt.hashpw(client.getPassword(), BCrypt.gensalt()));
+        client.setRole(UserRole.CLIENT);
         client.setTier(CustomerTier.BASIC);
         client.setTotalOrders(0);
         client.setTotalSpent(BigDecimal.ZERO);
