@@ -38,6 +38,9 @@ public class ClientServiceImpl implements ClientService{
         client.setUser(user);
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
+        client.setTotalSpent(BigDecimal.ZERO);
+        client.setTotalOrders(0);
+        client.setTier(CustomerTier.BASIC);
 
         return clientMapper.toDTO(clientRepository.save(client));
     }
