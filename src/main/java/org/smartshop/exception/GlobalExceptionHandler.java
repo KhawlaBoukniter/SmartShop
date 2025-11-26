@@ -19,8 +19,8 @@ public class GlobalExceptionHandler {
         return details(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(RessourceNotFoundException.class)
-    public ResponseEntity<Map<String,Object>> handleRessourceNotFoundException(RessourceNotFoundException ex, HttpServletRequest request) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String,Object>> handleRessourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
         return details(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
