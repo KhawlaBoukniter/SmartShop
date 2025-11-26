@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.smartshop.enums.CustomerTier;
+import org.smartshop.enums.UserRole;
 
 import java.math.BigDecimal;
 
@@ -12,10 +13,12 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientDTO extends UserDTO {
-    private Long id;
+public class ClientDTO {
+    private String username;
+    private String password;
     private String name;
     private String email;
+    private UserRole role = UserRole.CLIENT;
     private CustomerTier tier;
     private Integer totalOrders;
     private BigDecimal totalSpent;
