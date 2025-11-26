@@ -35,12 +35,12 @@ public class ClientDTO {
 
     private UserRole role = UserRole.CLIENT;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private CustomerTier tier;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer totalOrders;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal totalSpent;
 }
