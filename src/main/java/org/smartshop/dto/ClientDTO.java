@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientDTO {
+public class ClientDTO extends UserDTO {
     private Long id;
     private String name;
     private String email;
