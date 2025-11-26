@@ -40,9 +40,15 @@ public class ProductServiceImpl implements ProductService {
                 .filter(p -> !p.getDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé avec id: " + id));
 
-        product.setName(productDTO.getName());
-        product.setPrice(productDTO.getPrice());
-        product.setStock(productDTO.getStock());
+        if (productDTO.getName() != null && !productDTO.getName().isBlank()) {
+            product.setName(productDTO.getName());
+        }
+        if (productDTO.getPrice() != null) {
+            product.setPrice(productDTO.getPrice());
+        }
+        if (productDTO.getStock() != null) {
+            product.setStock(productDTO.getStock());
+        }
 
         return productMapper.toDTO(productRepository.save(product));
     }
