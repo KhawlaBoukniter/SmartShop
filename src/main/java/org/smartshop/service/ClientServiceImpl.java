@@ -2,11 +2,13 @@ package org.smartshop.service;
 
 import org.smartshop.dto.ClientDTO;
 import org.smartshop.entity.Client;
+import org.smartshop.entity.User;
 import org.smartshop.enums.CustomerTier;
 import org.smartshop.enums.UserRole;
 import org.smartshop.exception.ResourceNotFoundException;
 import org.smartshop.mapper.ClientMapper;
 import org.smartshop.repository.ClientRepository;
+import org.smartshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,16 @@ public class ClientServiceImpl implements ClientService{
     }
 
     public ClientDTO createClient(ClientDTO clientDTO) {
-        Client client = clientMapper.toEntity(clientDTO);
-        client.setPassword(BCrypt.hashpw(client.getPassword(), BCrypt.gensalt()));
-        client.setRole(UserRole.CLIENT);
-        client.setTier(CustomerTier.BASIC);
-        client.setTotalOrders(0);
-        client.setTotalSpent(BigDecimal.ZERO);
+        User user = new User();
+        user.setUsername(clientDTO.getUsername());
+        user.setPassword(BCrypt.hashpw(clientDTO.getPassword(), BCrypt.gensalt()));
+        user.setRole(UserRole.CLIENT);
+
+        Client client = new Client();
+        client.setUser(user);
+        client.setName(clientDTO.getName());
+        client.setEmail(clientDTO.getEmail());
+
         return clientMapper.toDTO(clientRepository.save(client));
     }
 

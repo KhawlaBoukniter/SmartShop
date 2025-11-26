@@ -1,5 +1,6 @@
 package org.smartshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -33,7 +34,13 @@ public class ClientDTO {
     private String email;
 
     private UserRole role = UserRole.CLIENT;
+
+    @JsonIgnore
     private CustomerTier tier;
+
+    @JsonIgnore
     private Integer totalOrders;
+
+    @JsonIgnore
     private BigDecimal totalSpent;
 }
