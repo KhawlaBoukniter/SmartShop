@@ -6,8 +6,8 @@ import org.smartshop.enums.CustomerTier;
 import org.smartshop.exception.ResourceNotFoundException;
 import org.smartshop.mapper.ClientMapper;
 import org.smartshop.repository.ClientRepository;
-import org.smartshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,18 +17,17 @@ import java.util.List;
 public class ClientServiceImpl implements ClientService{
 
     private final ClientRepository clientRepository;
-    private final UserRepository userRepository;
     private final ClientMapper clientMapper;
 
     @Autowired
-    public ClientServiceImpl(ClientRepository clientRepository, UserRepository userRepository, ClientMapper clientMapper) {
+    public ClientServiceImpl(ClientRepository clientRepository, ClientMapper clientMapper) {
         this.clientRepository = clientRepository;
-        this.userRepository = userRepository;
         this.clientMapper = clientMapper;
     }
 
     public ClientDTO createClient(ClientDTO clientDTO) {
         Client client = clientMapper.toEntity(clientDTO);
+        client.setPassword(BCrypt.hashpw(client.getPassword(), BCrypt.gensalt()));
         client.setTier(CustomerTier.BASIC);
         client.setTotalOrders(0);
         client.setTotalSpent(BigDecimal.ZERO);
