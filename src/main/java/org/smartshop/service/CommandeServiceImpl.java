@@ -80,6 +80,21 @@ public class CommandeServiceImpl implements CommandeService {
         BigDecimal discount = clientService.calculateLoyaltyDiscount(client.getTier(), subTotal);
 
         // PromoCode logic
+        if (commandeDTO.getPromoCode() != null && !commandeDTO.getPromoCode().isBlank()) {
+            String promoCode = commandeDTO.getPromoCode().trim().toUpperCase();
+
+            if (!promoCode.matches("^PROMO-[A-Z0-9]{4}$")) {
+                throw new BusinessException("Code promo invalide. Format attendu : PROMO-XXXX");
+            }
+
+            PromoCode promo = promoCodeRepository.findByCodeAndUsedFalse(promoCode)
+                    .orElseThrow(() -> new BusinessException("Code promo invalide ou déjà utilisé"));
+
+            promo.setUsed(true);
+            promoCodeRepository.save(promo);
+
+            commande.setPromoCode(promoCode);
+        }
 
         commande.setRemise(discount);
 
