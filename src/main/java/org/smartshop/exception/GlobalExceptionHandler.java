@@ -3,11 +3,13 @@ package org.smartshop.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,6 +29,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String,Object>> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         return details(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String,Object>> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        return details(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     private  ResponseEntity<Map<String,Object>> details(HttpStatus status, String message, HttpServletRequest request) {
