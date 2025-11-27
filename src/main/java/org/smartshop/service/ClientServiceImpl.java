@@ -69,4 +69,37 @@ public class ClientServiceImpl implements ClientService{
         return clientRepository.findAll().stream().map(clientMapper::toDTO).toList();
     }
 
+    public void updateClientStats(Long id, BigDecimal orderAmount) {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
+
+        client.setTotalOrders(client.getTotalOrders() + 1);
+        client.setTotalSpent(client.getTotalSpent().add(orderAmount));
+
+        CustomerTier newTier = calculateTier(client.getTotalOrders(), client.getTotalSpent());
+        client.setTier(newTier);
+
+        clientRepository.save(client);
+    }
+
+    private CustomerTier calculateTier(int totalOrders, BigDecimal totalSpent) {
+        if (totalOrders >= 20 || totalSpent.compareTo(new BigDecimal("15000")) >= 0) {
+            return CustomerTier.PLATINUM;
+        } else if (totalOrders >= 10 || totalSpent.compareTo(new BigDecimal("5000")) >= 0) {
+            return CustomerTier.GOLD;
+        } else if (totalOrders >= 3 || totalSpent.compareTo(new BigDecimal("1000")) >= 0) {
+            return CustomerTier.SILVER;
+        }
+        return CustomerTier.BASIC;
+    }
+
+    public BigDecimal calculateLoyaltyDiscount(CustomerTier tier, BigDecimal subTotal) {
+        return switch (tier) {
+            case SILVER -> subTotal.compareTo(new BigDecimal("500"))  >= 0 ? subTotal.multiply(new BigDecimal("0.05")) : BigDecimal.ZERO;
+            case GOLD -> subTotal.compareTo(new BigDecimal("800"))  >= 0 ? subTotal.multiply(new BigDecimal("0.10")) : BigDecimal.ZERO;
+            case PLATINUM -> subTotal.compareTo(new BigDecimal("1200")) >= 0 ? subTotal.multiply(new BigDecimal("0.15")) : BigDecimal.ZERO;
+            default -> BigDecimal.ZERO;
+        };
+    }
+
 }
