@@ -5,6 +5,7 @@ import org.smartshop.dto.CommandeDTO;
 import org.smartshop.dto.OrderItemDTO;
 import org.smartshop.entity.*;
 import org.smartshop.enums.OrderStatus;
+import org.smartshop.enums.PaymentStatus;
 import org.smartshop.exception.BusinessException;
 import org.smartshop.exception.ResourceNotFoundException;
 import org.smartshop.mapper.CommandeMapper;
@@ -134,6 +135,12 @@ public class CommandeServiceImpl implements CommandeService {
         if (commande.getStatus() == OrderStatus.CONFIRMED || commande.getStatus() == OrderStatus.CANCELED
                 || commande.getStatus() == OrderStatus.REJECTED) {
             throw new BusinessException("Commande déjà confirmée, impossible de changer statut");
+        }
+
+        Boolean hasPendingPayment = commande.getPayments().stream()
+                .anyMatch(p -> p.getPaymentStatus() == PaymentStatus.EN_ATTENTE);
+        if (hasPendingPayment) {
+            throw new BusinessException("Impossible de confirmer : des paiements sont encore en attente d'encaissement");
         }
 
         if (newStatus == OrderStatus.CONFIRMED) {
