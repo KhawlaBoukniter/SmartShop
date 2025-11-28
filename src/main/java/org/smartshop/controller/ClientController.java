@@ -1,9 +1,12 @@
 package org.smartshop.controller;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.smartshop.dto.ClientDTO;
+import org.smartshop.dto.CommandeDTO;
 import org.smartshop.dto.Validation.Creation;
 import org.smartshop.dto.Validation.Update;
+import org.smartshop.exception.UnauthorizedException;
 import org.smartshop.service.ClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,4 +47,17 @@ public class ClientController {
         clientService.deleteClient(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<ClientDTO> getMyProfile(HttpSession session) {
+        Long clientId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+
+        if (clientId == null || !"CLIENT".equals(role)) {
+            throw new UnauthorizedException("Vous devez vous connecter");
+        }
+        return ResponseEntity.ok(clientService.getClient(clientId));
+    }
+
+
 }
