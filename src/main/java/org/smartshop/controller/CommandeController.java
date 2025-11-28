@@ -1,5 +1,6 @@
 package org.smartshop.controller;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.smartshop.dto.CommandeDTO;
 import org.smartshop.enums.OrderStatus;
@@ -32,9 +33,25 @@ public class CommandeController {
         return ResponseEntity.ok(commandeService.getClientOrders(clientId));
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Void> updateStatus(@PathVariable Long id, @RequestParam OrderStatus status) {
-        commandeService.updateStatus(id, status);
+    @PatchMapping("/{id}/confirm")
+    public ResponseEntity<Void> confirmOrder(@PathVariable Long id) {
+        commandeService.updateStatus(id, OrderStatus.CONFIRMED);
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelOrder(@PathVariable Long id) {
+        commandeService.updateStatus(id, OrderStatus.CANCELED);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<CommandeDTO>> getOrdersByClient(HttpSession session) {
+        Long clientId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+        if (clientId == null || !"CLIENT".equals(role)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(commandeService.getOrdersByClient(clientId));
     }
 }
