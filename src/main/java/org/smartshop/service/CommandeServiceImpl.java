@@ -13,6 +13,7 @@ import org.smartshop.repository.ClientRepository;
 import org.smartshop.repository.CommandeRepository;
 import org.smartshop.repository.ProductRepository;
 import org.smartshop.repository.PromoCodeRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +34,13 @@ public class CommandeServiceImpl implements CommandeService {
     private final PromoCodeRepository promoCodeRepository;
     private final ClientService clientService;
 
+    @Value("${app.tva.rate}")
+    private BigDecimal tvaRate;
+
     @Transactional
     public CommandeDTO createOrder(CommandeDTO commandeDTO) {
         Client client = clientRepository.findById(commandeDTO.getClientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client non trouvé avec id: " + commandeDTO.getClientId()));
 
         Commande commande = new Commande();
         commande.setClient(client);
@@ -102,7 +106,7 @@ public class CommandeServiceImpl implements CommandeService {
         BigDecimal totalHt = subTotal.subtract(discount);
         if (totalHt.compareTo(BigDecimal.ZERO) < 0) totalHt = BigDecimal.ZERO;
 
-        BigDecimal tva = totalHt.multiply(new BigDecimal("0.20"))
+        BigDecimal tva = totalHt.multiply(tvaRate)
                 .setScale(2, RoundingMode.HALF_UP);
         BigDecimal totalTtc = totalHt.add(tva)
                 .setScale(2, RoundingMode.HALF_UP);
@@ -110,8 +114,6 @@ public class CommandeServiceImpl implements CommandeService {
         commande.setTva(tva);
         commande.setTotal(totalTtc);
         commande.setMontantRestant(totalTtc);
-
-        // Payment logic
 
         return commandeMapper.toDTO(commandeRepository.save(commande));
     }
