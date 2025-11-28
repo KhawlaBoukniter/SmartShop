@@ -184,12 +184,12 @@ public class CommandeServiceImpl implements CommandeService {
             }
 
             clientService.updateClientStats(commande.getClient().getId(), commande.getTotal());
-        }
 
-        if (newStatus == OrderStatus.CONFIRMED) {
             log.info("COMMANDE CONFIRMÉE | ID: {} | Client: {} | Total TTC: {} DH | Stock décrémenté | Stats client mises à jour",
                     orderId, commande.getClient().getName(), commande.getTotal());
+
         }
+
         if (newStatus == OrderStatus.CANCELED) {
             log.info("COMMANDE ANNULÉE | ID: {} | Raison: Annulation admin", orderId);
         }
