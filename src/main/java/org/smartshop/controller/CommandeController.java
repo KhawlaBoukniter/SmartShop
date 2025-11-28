@@ -1,12 +1,14 @@
 package org.smartshop.controller;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.smartshop.dto.CommandeDTO;
 import org.smartshop.enums.OrderStatus;
 import org.smartshop.service.CommandeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,12 +16,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Validated
 public class CommandeController {
 
     private final CommandeService commandeService;
 
     @PostMapping
-    public ResponseEntity<CommandeDTO> createOrder(@RequestBody CommandeDTO commandeDTO) {
+    public ResponseEntity<CommandeDTO> createOrder(@Valid @RequestBody CommandeDTO commandeDTO) {
         return new ResponseEntity<>(commandeService.createOrder(commandeDTO), HttpStatus.CREATED);
     }
 
