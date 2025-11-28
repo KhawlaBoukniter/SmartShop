@@ -2,9 +2,11 @@ package org.smartshop.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.smartshop.dto.PaymentDTO;
+import org.smartshop.dto.Validation.Creation;
 import org.smartshop.service.PaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +19,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/order/{orderId}")
-    public ResponseEntity<PaymentDTO> addPayment(@PathVariable Long orderId, @RequestBody PaymentDTO paymentDTO) {
+    public ResponseEntity<PaymentDTO> addPayment(@PathVariable Long orderId, @Validated({Creation.class, PaymentDTO.ChequeGroup.class, PaymentDTO.VirementGroup.class, PaymentDTO.EspeceGroup.class}) @RequestBody PaymentDTO paymentDTO) {
         return new ResponseEntity<>(paymentService.addPayment(orderId, paymentDTO), HttpStatus.CREATED);
     }
 

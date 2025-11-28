@@ -30,6 +30,9 @@ public class PaymentDTO {
 
     @NotNull(groups = Creation.class, message = "Le montant du paiement est obligatoire")
     @PositiveOrZero(groups = Creation.class, message = "Le montant doit être positif")
+    @DecimalMax(value = "20000.00",
+            message = "Paiement en espèces limité à 20 000 DH",
+            groups = EspeceGroup.class)
     private BigDecimal amount;
 
     @NotNull(groups = Creation.class, message = "Le moyen de paiement est obligatoire")
@@ -39,7 +42,7 @@ public class PaymentDTO {
             groups = {Creation.class, Update.class, ChequeGroup.class, VirementGroup.class})
     @Pattern(regexp = "^(CHQ|REC| VIR)-[A-Z0-9]{6,10}$",
             message = "Référence invalide (ex: CHQ-7894561, RECU-001, VIR-2025-11111)",
-            groups = {Creation.class, Update.class, ChequeGroup.class, RecuGroup.class, VirementGroup.class})
+            groups = {Creation.class, Update.class, ChequeGroup.class, EspeceGroup.class, VirementGroup.class})
     private String reference;
 
     @NotNull(groups = Creation.class, message = "La date de paiement est obligatoire")
@@ -55,5 +58,5 @@ public class PaymentDTO {
 
     public interface ChequeGroup {}
     public interface VirementGroup {}
-    public interface RecuGroup {}
+    public interface EspeceGroup {}
 }

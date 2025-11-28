@@ -58,8 +58,11 @@ public class PaymentServiceImpl implements PaymentService {
                         throw new BusinessException("Référence obligatoire au format RECU-XXX pour espèces");
                     }
                     payment.setPaymentStatus(PaymentStatus.ENCAISSE);
-                    payment.setDateReceipt(LocalDate.now());
-                    commande.setMontantRestant(commande.getMontantRestant().subtract(amount));
+                    payment.setDateReceipt(paymentDTO.getDatePayment());
+
+                    log.info("PAIEMENT ESPÈCES AUTO-ENCAISSÉ | Commande: {} | Montant: {} DH | Référence: {}",
+                            orderId, paymentDTO.getAmount(), paymentDTO.getReference());
+
                     break;
                 case CHEQUE:
                     if (paymentDTO.getReference() == null || !paymentDTO.getReference().startsWith("CHQ-") ||
@@ -81,7 +84,9 @@ public class PaymentServiceImpl implements PaymentService {
             paymentRepository.save(payment);
             log.info("PAIEMENT CRÉÉ | Commande: {} | Montant: {} DH | Moyen: {} | Statut: {} | Réf: {}",
                     orderId, amount, paymentDTO.getPaymentType(), payment.getPaymentStatus(), payment.getReference());
+
             commande.getPayments().add(payment);
+
             if (payment.getPaymentStatus() == PaymentStatus.ENCAISSE) {
                 commande.setMontantRestant(commande.getMontantRestant().subtract(amount));
             }
