@@ -36,6 +36,11 @@ public class GlobalExceptionHandler {
         return details(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleAll(Exception ex, HttpServletRequest request) {
+        return details(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+
     private  ResponseEntity<Map<String,Object>> details(HttpStatus status, String message, HttpServletRequest request) {
         Map<String,Object> response = Map.of(
                 "timestamp", LocalDateTime.now(),
