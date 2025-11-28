@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
@@ -22,5 +24,15 @@ public class PaymentController {
     @PutMapping("/{id}/validate")
     public ResponseEntity<PaymentDTO> validatePayment(@PathVariable Long id) {
         return ResponseEntity.ok(paymentService.validatePayment(id));
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<PaymentDTO> rejectPayment(@PathVariable Long id) {
+        return ResponseEntity.ok(paymentService.rejectPayment(id));
+    }
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<List<PaymentDTO>> getPaymentsByOrder(@PathVariable Long orderId) {
+        return ResponseEntity.ok(paymentService.getPaymentsByOrderId(orderId));
     }
 }
