@@ -51,24 +51,29 @@ public class CommandeServiceImpl implements CommandeService {
 
         List<OrderItem> items = new ArrayList<>();
         BigDecimal subTotal = BigDecimal.ZERO;
+        Boolean stockInsufficient = false;
 
         for (OrderItemDTO itemDTO : commandeDTO.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProductId())
+            Product product = productRepository.findById(itemDTO.getProductId()).filter(p -> !p.getDeleted())
                     .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé avec id : " + itemDTO.getProductId()));
 
-            if (product.getDeleted()) {
-                commande.setStatus(OrderStatus.REJECTED);
-                commande.setMontantRestant(BigDecimal.ZERO);
-                commandeRepository.save(commande);
-                throw new BusinessException("Produit supprimé: " + product.getName());
+            if (product.getStock() < itemDTO.getQuantity()) {
+                stockInsufficient = true;
             }
 
-            if (product.getStock() < itemDTO.getQuantity()) {
-                commande.setStatus(OrderStatus.REJECTED);
-                commande.setMontantRestant(BigDecimal.ZERO);
-                commandeRepository.save(commande);
-                throw new BusinessException("Stock insuffisant pour produit: " + product.getName());
-            }
+//            if (product.getDeleted()) {
+//                commande.setStatus(OrderStatus.REJECTED);
+//                commande.setMontantRestant(BigDecimal.ZERO);
+//                commandeRepository.save(commande);
+//                throw new BusinessException("Produit supprimé: " + product.getName());
+//            }
+//
+//            if (product.getStock() < itemDTO.getQuantity()) {
+//                commande.setStatus(OrderStatus.REJECTED);
+//                commande.setMontantRestant(BigDecimal.ZERO);
+//                commandeRepository.save(commande);
+//                throw new BusinessException("Stock insuffisant pour produit: " + product.getName());
+//            }
 
             OrderItem item = new OrderItem();
             item.setCommande(commande);
@@ -82,7 +87,7 @@ public class CommandeServiceImpl implements CommandeService {
         }
 
         commande.setItems(items);
-        commande.setSubTotal(subTotal);
+        commande.setSubTotal(subTotal.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal discount = clientService.calculateLoyaltyDiscount(client.getTier(), subTotal);
 
@@ -105,7 +110,7 @@ public class CommandeServiceImpl implements CommandeService {
             commande.setPromoCode(promo);
         }
 
-        commande.setRemise(discount.add(promoDiscount));
+        commande.setRemise(discount.add(promoDiscount).setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal totalHt = subTotal.subtract(discount).subtract(promoDiscount);
         if (totalHt.compareTo(BigDecimal.ZERO) < 0) totalHt = BigDecimal.ZERO;
@@ -119,10 +124,14 @@ public class CommandeServiceImpl implements CommandeService {
         commande.setTotal(totalTtc);
         commande.setMontantRestant(totalTtc);
 
+        if (stockInsufficient) {
+            commande.setStatus(OrderStatus.REJECTED);
+        }
+
         Commande saved = commandeRepository.save(commande);
 
-        log.info("COMMANDE CRÉÉE | ID: {} | Client: {} | Total TTC: {} DH | Remise: {} DH | Code promo: {}",
-                saved.getId(), client.getName(), saved.getTotal(), discount, commandeDTO.getPromoCode() != null ? commandeDTO.getPromoCode() : "aucun");
+        log.info("COMMANDE CRÉÉE | ID: {} | Client: {} | Total TTC: {} DH | Remise: {} DH | Code promo: {} | Status: {}",
+                saved.getId(), client.getName(), saved.getTotal(), discount, commandeDTO.getPromoCode() != null ? commandeDTO.getPromoCode() : "aucun", commandeDTO.getStatus());
 
         return commandeMapper.toDTO(saved);
     }
