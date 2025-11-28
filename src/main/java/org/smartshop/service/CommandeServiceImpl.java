@@ -80,7 +80,7 @@ public class CommandeServiceImpl implements CommandeService {
             item.setProduct(product);
             item.setQuantity(itemDTO.getQuantity());
             item.setUnitPrice(product.getPrice());
-            item.setTotal(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
+            item.setTotal(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())).setScale(2, RoundingMode.HALF_UP));
 
             items.add(item);
             subTotal = subTotal.add(item.getTotal());
@@ -89,7 +89,7 @@ public class CommandeServiceImpl implements CommandeService {
         commande.setItems(items);
         commande.setSubTotal(subTotal.setScale(2, RoundingMode.HALF_UP));
 
-        BigDecimal discount = clientService.calculateLoyaltyDiscount(client.getTier(), subTotal);
+        BigDecimal discount = clientService.calculateLoyaltyDiscount(client.getTier(), subTotal).setScale(2, RoundingMode.HALF_UP);
 
         // PromoCode logic
         BigDecimal promoDiscount = BigDecimal.ZERO;

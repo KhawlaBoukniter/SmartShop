@@ -16,6 +16,7 @@ import org.smartshop.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -109,7 +110,7 @@ public class PaymentServiceImpl implements PaymentService {
                     paymentId, payment.getCommande().getId(), payment.getAmount(), LocalDate.now());
 
             Commande commande = payment.getCommande();
-            commande.setMontantRestant(commande.getMontantRestant().subtract(payment.getAmount()));
+            commande.setMontantRestant(commande.getMontantRestant().subtract(payment.getAmount()).setScale(2, RoundingMode.HALF_UP));
             commandeRepository.save(commande);
 
             return paymentMapper.toDTO(payment);
