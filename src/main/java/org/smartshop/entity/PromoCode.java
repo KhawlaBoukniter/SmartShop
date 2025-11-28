@@ -16,5 +16,9 @@ public class PromoCode {
 
     @Column(unique = true, nullable = false)
     private String promoCode;
+
+    @OneToOne
+    private Commande commande;
+
     private boolean used = false;
 }

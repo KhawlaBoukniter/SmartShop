@@ -24,7 +24,10 @@ public class Commande {
     private BigDecimal remise;
     private BigDecimal tva;
     private BigDecimal total;
-    private String promoCode;
+
+    @OneToOne
+    @JoinColumn(name = "promo_code_id")
+    private PromoCode promoCode;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

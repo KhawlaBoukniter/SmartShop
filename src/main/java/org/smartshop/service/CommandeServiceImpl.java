@@ -98,7 +98,7 @@ public class CommandeServiceImpl implements CommandeService {
             promo.setUsed(true);
             promoCodeRepository.save(promo);
 
-            commande.setPromoCode(promoCode);
+            commande.setPromoCode(promo);
         }
 
         commande.setRemise(discount);
