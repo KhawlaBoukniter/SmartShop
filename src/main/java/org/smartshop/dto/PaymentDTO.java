@@ -33,7 +33,7 @@ public class PaymentDTO {
     private BigDecimal amount;
 
     @NotNull(groups = Creation.class, message = "Le moyen de paiement est obligatoire")
-    private PaymentType paymentMethod;
+    private PaymentType paymentType;
 
     @NotBlank(message = "La référence est obligatoire pour CHÈQUE et VIREMENT",
             groups = {Creation.class, Update.class, ChequeGroup.class, VirementGroup.class})
@@ -44,14 +44,14 @@ public class PaymentDTO {
 
     @NotNull(groups = Creation.class, message = "La date de paiement est obligatoire")
     @PastOrPresent(groups = Creation.class, message = "La date de paiement ne peut pas être future")
-    private LocalDate paymentDate;
+    private LocalDate datePayment;
 
     private LocalDate dateReceipt;
     private String bank;
 
     @Future(message = "La date d'échéance doit être dans le futur", groups = {Creation.class, Update.class, ChequeGroup.class})
     private LocalDate deadline;
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
 
     public interface ChequeGroup {}
     public interface VirementGroup {}
