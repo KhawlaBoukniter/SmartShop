@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -75,6 +76,11 @@ public class ClientServiceImpl implements ClientService{
 
         client.setTotalOrders(client.getTotalOrders() + 1);
         client.setTotalSpent(client.getTotalSpent().add(orderAmount));
+
+        if (client.getFirstOrderDate() == null) {
+            client.setFirstOrderDate(LocalDateTime.now());
+        }
+        client.setLastOrderDate(LocalDateTime.now());
 
         CustomerTier newTier = calculateTier(client.getTotalOrders(), client.getTotalSpent());
         client.setTier(newTier);

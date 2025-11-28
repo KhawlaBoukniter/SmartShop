@@ -13,6 +13,7 @@ import org.smartshop.enums.CustomerTier;
 import org.smartshop.enums.UserRole;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -46,4 +47,10 @@ public class ClientDTO {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal totalSpent;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private LocalDateTime firstOrderDate;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private LocalDateTime lastOrderDate;
 }

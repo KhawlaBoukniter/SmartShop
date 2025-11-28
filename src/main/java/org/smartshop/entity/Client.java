@@ -5,6 +5,7 @@ import lombok.Data;
 import org.smartshop.enums.CustomerTier;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -23,8 +24,11 @@ public class Client {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    private CustomerTier tier;
+    private CustomerTier tier = CustomerTier.BASIC;
 
-    private Integer totalOrders;
-    private BigDecimal totalSpent;
+    private Integer totalOrders = 0;
+    private BigDecimal totalSpent  = BigDecimal.ZERO;
+
+    private LocalDateTime firstOrderDate;
+    private LocalDateTime lastOrderDate;
 }
