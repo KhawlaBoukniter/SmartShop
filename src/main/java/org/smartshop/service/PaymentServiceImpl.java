@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -100,5 +101,10 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toDTO(payment);
     }
 
+    public List<PaymentDTO> getPaymentsByOrderId(Long orderId) {
+        return paymentRepository.findByCommande_IdOrderByNumbe(orderId).stream()
+                .map(paymentMapper::toDTO)
+                .toList();
+    }
 
 }
