@@ -21,7 +21,7 @@ public class PromoCodeServiceImpl implements PromoCodeService {
         String code;
         do {
             code = "PROMO-" + generateRandomCode();
-        } while (promoCodeRepository.existsByCode(code));
+        } while (promoCodeRepository.existsByPromoCode(code));
 
         PromoCode promo = new PromoCode();
         promo.setPromoCode(code);

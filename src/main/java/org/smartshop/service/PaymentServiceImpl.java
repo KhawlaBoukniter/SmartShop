@@ -36,7 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             BigDecimal amount = paymentDTO.getAmount();
 
-            if (paymentDTO.getPaymentMethod().equals(PaymentType.ESPECES) && amount.compareTo(new BigDecimal("20000")) > 0) {
+            if (paymentDTO.getPaymentType().equals(PaymentType.ESPECES) && amount.compareTo(new BigDecimal("20000")) > 0) {
                 throw new BusinessException("Montant du paiement dépasse la limite légale de 20 000 DH");
             }
 
@@ -49,10 +49,12 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setNumber(commande.getPayments().size() + 1);
             payment.setDatePayment(LocalDate.now());
 
-            if (PaymentType.ESPECES.equals(paymentDTO.getPaymentMethod())) {
+            if (PaymentType.ESPECES.equals(paymentDTO.getPaymentType())) {
+                payment.setPaymentType(PaymentType.ESPECES);
                 payment.setPaymentStatus(PaymentStatus.ENCAISSE);
                 payment.setDateReceipt(LocalDate.now());
             } else {
+                payment.setPaymentType(paymentDTO.getPaymentType());
                 payment.setPaymentStatus(PaymentStatus.EN_ATTENTE);
                 payment.setDateReceipt(null);
             }
@@ -102,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     public List<PaymentDTO> getPaymentsByOrderId(Long orderId) {
-        return paymentRepository.findByCommande_IdOrderByNumbe(orderId).stream()
+        return paymentRepository.findByCommande_IdOrderByNumber(orderId).stream()
                 .map(paymentMapper::toDTO)
                 .toList();
     }

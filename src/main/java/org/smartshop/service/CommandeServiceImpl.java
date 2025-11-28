@@ -92,7 +92,7 @@ public class CommandeServiceImpl implements CommandeService {
                 throw new BusinessException("Code promo invalide. Format attendu : PROMO-XXXX");
             }
 
-            PromoCode promo = promoCodeRepository.findByCodeAndUsedFalse(promoCode)
+            PromoCode promo = promoCodeRepository.findByPromoCodeAndUsedFalse(promoCode)
                     .orElseThrow(() -> new BusinessException("Code promo invalide ou déjà utilisé"));
 
             promo.setUsed(true);

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PromoCodeController {
 
-    PromoCodeService promoCodeService;
+    private final PromoCodeService promoCodeService;
 
     @PostMapping("/generate")
     public ResponseEntity<PromoCodeDTO> generateOne() {
