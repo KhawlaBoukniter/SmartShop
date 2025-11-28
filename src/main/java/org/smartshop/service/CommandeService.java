@@ -10,4 +10,5 @@ public interface CommandeService {
     CommandeDTO getOrder(Long id);
     List<CommandeDTO> getClientOrders(Long clientId);
     void updateStatus(Long orderId, OrderStatus newStatus);
+    List<CommandeDTO> getOrdersByClient(Long clientId);
 }

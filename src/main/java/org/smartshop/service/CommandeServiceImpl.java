@@ -1,6 +1,7 @@
 package org.smartshop.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.smartshop.dto.CommandeDTO;
 import org.smartshop.dto.OrderItemDTO;
 import org.smartshop.entity.*;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommandeServiceImpl implements CommandeService {
 
     private final CommandeRepository commandeRepository;
@@ -85,6 +87,7 @@ public class CommandeServiceImpl implements CommandeService {
         BigDecimal discount = clientService.calculateLoyaltyDiscount(client.getTier(), subTotal);
 
         // PromoCode logic
+        BigDecimal promoDiscount = BigDecimal.ZERO;
         if (commandeDTO.getPromoCode() != null && !commandeDTO.getPromoCode().isBlank()) {
             String promoCode = commandeDTO.getPromoCode().trim().toUpperCase();
 
@@ -95,15 +98,16 @@ public class CommandeServiceImpl implements CommandeService {
             PromoCode promo = promoCodeRepository.findByPromoCodeAndUsedFalse(promoCode)
                     .orElseThrow(() -> new BusinessException("Code promo invalide ou déjà utilisé"));
 
+            promoDiscount = subTotal.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
             promo.setUsed(true);
             promoCodeRepository.save(promo);
 
             commande.setPromoCode(promo);
         }
 
-        commande.setRemise(discount);
+        commande.setRemise(discount.add(promoDiscount));
 
-        BigDecimal totalHt = subTotal.subtract(discount);
+        BigDecimal totalHt = subTotal.subtract(discount).subtract(promoDiscount);
         if (totalHt.compareTo(BigDecimal.ZERO) < 0) totalHt = BigDecimal.ZERO;
 
         BigDecimal tva = totalHt.multiply(tvaRate)
@@ -115,7 +119,12 @@ public class CommandeServiceImpl implements CommandeService {
         commande.setTotal(totalTtc);
         commande.setMontantRestant(totalTtc);
 
-        return commandeMapper.toDTO(commandeRepository.save(commande));
+        Commande saved = commandeRepository.save(commande);
+
+        log.info("COMMANDE CRÉÉE | ID: {} | Client: {} | Total TTC: {} DH | Remise: {} DH | Code promo: {}",
+                saved.getId(), client.getName(), saved.getTotal(), discount, commandeDTO.getPromoCode() != null ? commandeDTO.getPromoCode() : "aucun");
+
+        return commandeMapper.toDTO(saved);
     }
 
     public CommandeDTO getOrder(Long id) {
@@ -139,6 +148,10 @@ public class CommandeServiceImpl implements CommandeService {
             throw new BusinessException("Commande déjà confirmée, impossible de changer statut");
         }
 
+        if (newStatus == OrderStatus.CANCELED && commande.getStatus() != OrderStatus.PENDING) {
+            throw new BusinessException("Une commande ne peut être annulée que si elle est en attente (PENDING)");
+        }
+
         Boolean hasPendingPayment = commande.getPayments().stream()
                 .anyMatch(p -> p.getPaymentStatus() == PaymentStatus.EN_ATTENTE);
         if (hasPendingPayment) {
@@ -148,6 +161,9 @@ public class CommandeServiceImpl implements CommandeService {
         if (newStatus == OrderStatus.CONFIRMED) {
             if (commande.getMontantRestant().compareTo(BigDecimal.ZERO) > 0) {
                 throw new BusinessException("Commande ne peut pas être confirmée. Payment non complété.");
+            }
+            if (commande.getPayments().stream().anyMatch(p -> p.getPaymentStatus() == PaymentStatus.EN_ATTENTE)) {
+                throw new BusinessException("Des paiements sont encore en attente d'encaissement");
             }
             for (OrderItem item : commande.getItems()) {
                 Product p = item.getProduct();
@@ -160,8 +176,25 @@ public class CommandeServiceImpl implements CommandeService {
 
             clientService.updateClientStats(commande.getClient().getId(), commande.getTotal());
         }
+
+        if (newStatus == OrderStatus.CONFIRMED) {
+            log.info("COMMANDE CONFIRMÉE | ID: {} | Client: {} | Total TTC: {} DH | Stock décrémenté | Stats client mises à jour",
+                    orderId, commande.getClient().getName(), commande.getTotal());
+        }
+        if (newStatus == OrderStatus.CANCELED) {
+            log.info("COMMANDE ANNULÉE | ID: {} | Raison: Annulation admin", orderId);
+        }
+
         commande.setStatus(newStatus);
         commandeRepository.save(commande);
     }
+
+    @Override
+    public List<CommandeDTO> getOrdersByClient(Long clientId) {
+        return commandeRepository.findByClient_Id(clientId).stream()
+                .map(commandeMapper::toDTO)
+                .toList();
+    }
+
 
 }
