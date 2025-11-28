@@ -67,6 +67,12 @@ L’application permet de gérer un portefeuille de **650 clients actifs** avec 
 - Génération de codes uniques `PROMO-XXXX` (ADMIN uniquement)
 - Remise fixe de 5% (cumulable avec fidélité)
 
+## Diagramme de classes UML
+
+![Diagramme de classes UML](diagrammes/diagramme-classes.png)
+
+> Fichier source : `diagrammes/diagramme-classes.png`
+
 ## Technologies utilisées
 
 - Java 17
