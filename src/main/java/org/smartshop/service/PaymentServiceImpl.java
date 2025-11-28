@@ -1,6 +1,7 @@
 package org.smartshop.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.smartshop.dto.PaymentDTO;
 import org.smartshop.entity.Commande;
 import org.smartshop.entity.Payment;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
         private final PaymentRepository paymentRepository;
@@ -49,19 +51,39 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setNumber(commande.getPayments().size() + 1);
             payment.setDatePayment(LocalDate.now());
 
-            if (PaymentType.ESPECES.equals(paymentDTO.getPaymentType())) {
-                payment.setPaymentType(PaymentType.ESPECES);
-                payment.setPaymentStatus(PaymentStatus.ENCAISSE);
-                payment.setDateReceipt(LocalDate.now());
-            } else {
-                payment.setPaymentType(paymentDTO.getPaymentType());
-                payment.setPaymentStatus(PaymentStatus.EN_ATTENTE);
-                payment.setDateReceipt(null);
+            switch (paymentDTO.getPaymentType()) {
+                case ESPECES:
+                    if (paymentDTO.getReference() == null || !paymentDTO.getReference().startsWith("RECU-")) {
+                        throw new BusinessException("Référence obligatoire au format RECU-XXX pour espèces");
+                    }
+                    payment.setPaymentStatus(PaymentStatus.ENCAISSE);
+                    payment.setDateReceipt(LocalDate.now());
+                    commande.setMontantRestant(commande.getMontantRestant().subtract(amount));
+                    break;
+                case CHEQUE:
+                    if (paymentDTO.getReference() == null || !paymentDTO.getReference().startsWith("CHQ-") ||
+                            paymentDTO.getBank() == null || paymentDTO.getDeadline() == null ||
+                            paymentDTO.getDeadline().isBefore(LocalDate.now().plusDays(1))) {
+                        throw new BusinessException("Pour chèque : référence CHQ-XXX, banque, et échéance future obligatoires");
+                    }
+                    payment.setPaymentStatus(PaymentStatus.EN_ATTENTE);
+                    break;
+                case VIREMENT:
+                    if (paymentDTO.getReference() == null || !paymentDTO.getReference().startsWith("VIR-") ||
+                            paymentDTO.getBank() == null) {
+                        throw new BusinessException("Pour virement : référence VIR-XXX et banque obligatoires");
+                    }
+                    payment.setPaymentStatus(PaymentStatus.EN_ATTENTE);
+                    break;
             }
 
             paymentRepository.save(payment);
-
-            commande.setMontantRestant(commande.getMontantRestant().subtract(amount));
+            log.info("PAIEMENT CRÉÉ | Commande: {} | Montant: {} DH | Moyen: {} | Statut: {} | Réf: {}",
+                    orderId, amount, paymentDTO.getPaymentType(), payment.getPaymentStatus(), payment.getReference());
+            commande.getPayments().add(payment);
+            if (payment.getPaymentStatus() == PaymentStatus.ENCAISSE) {
+                commande.setMontantRestant(commande.getMontantRestant().subtract(amount));
+            }
             commandeRepository.save(commande);
 
             return paymentMapper.toDTO(payment);
@@ -81,8 +103,16 @@ public class PaymentServiceImpl implements PaymentService {
 
             payment.setPaymentStatus(PaymentStatus.ENCAISSE);
             payment.setDateReceipt(LocalDate.now());
+            paymentRepository.save(payment);
 
-            return paymentMapper.toDTO(paymentRepository.save(payment));
+            log.info("PAIEMENT VALIDÉ | Paiement ID: {} | Commande: {} | Montant: {} DH | Date encaissement: {}",
+                    paymentId, payment.getCommande().getId(), payment.getAmount(), LocalDate.now());
+
+            Commande commande = payment.getCommande();
+            commande.setMontantRestant(commande.getMontantRestant().subtract(payment.getAmount()));
+            commandeRepository.save(commande);
+
+            return paymentMapper.toDTO(payment);
         }
 
     public PaymentDTO rejectPayment(Long paymentId) {
@@ -95,6 +125,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         payment.setPaymentStatus(PaymentStatus.REJETE);
         paymentRepository.save(payment);
+
+        log.info("PAIEMENT REJETÉ | Paiement ID: {} | Commande: {} | Montant: {} DH | Raison: Rejet admin",
+                paymentId, payment.getCommande().getId(), payment.getAmount());
 
         Commande commande = payment.getCommande();
         commande.setMontantRestant(commande.getMontantRestant().add(payment.getAmount()));
