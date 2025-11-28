@@ -30,9 +30,15 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toDTO(product);
     }
 
-    public Page<ProductDTO> getAllProducts(Pageable pageable) {
-        return productRepository.findByDeleted(false, pageable)
-                .map(productMapper::toDTO);
+    public Page<ProductDTO> getAllProducts(String name, Pageable pageable) {
+        Page<Product> page;
+
+        if (name != null && !name.trim().isEmpty()) {
+            page = productRepository.findByDeletedAndNameContainingIgnoreCase(false, name.trim(), pageable);
+        } else {
+            page = productRepository.findByDeleted(false, pageable);
+        }
+        return page.map(productMapper::toDTO);
     }
 
     public ProductDTO updateProduct(Long id, ProductDTO productDTO) {

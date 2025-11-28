@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 public interface ProductService {
     ProductDTO createProduct(ProductDTO productDTO);
     ProductDTO getProduct(Long id);
-    Page<ProductDTO> getAllProducts(Pageable pageable);
+    Page<ProductDTO> getAllProducts(String name, Pageable pageable);
     ProductDTO updateProduct(Long id, ProductDTO productDTO);
     void deleteProduct(Long id);
 }

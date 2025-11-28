@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByDeleted(Boolean deleted, Pageable pageable);
+
+    Page<Product> findByDeletedAndNameContainingIgnoreCase(Boolean deleted, String name, Pageable pageable);
 }
