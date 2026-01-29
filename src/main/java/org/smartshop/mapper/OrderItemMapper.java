@@ -9,6 +9,7 @@ import org.smartshop.entity.OrderItem;
 public interface OrderItemMapper {
 
     @Mapping(source = "product.id", target = "productId")
+    @Mapping(source = "commande.id", target = "commandeId")
     OrderItemDTO toDTO(OrderItem orderItem);
 
     OrderItem toEntity(OrderItemDTO orderItemDTO);

@@ -4,6 +4,7 @@ import org.smartshop.dto.CommandeDTO;
 import org.smartshop.enums.OrderStatus;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CommandeService {
     CommandeDTO createOrder(CommandeDTO commandeDTO);
@@ -11,4 +12,5 @@ public interface CommandeService {
     List<CommandeDTO> getClientOrders(Long clientId);
     void updateStatus(Long orderId, OrderStatus newStatus);
     List<CommandeDTO> getOrdersByClient(Long clientId);
+    Map<OrderStatus, Long> getTotalOrdersByStatus();
 }

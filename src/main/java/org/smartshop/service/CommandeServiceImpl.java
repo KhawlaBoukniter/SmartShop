@@ -23,6 +23,8 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -204,6 +206,11 @@ public class CommandeServiceImpl implements CommandeService {
                 .map(commandeMapper::toDTO)
                 .toList();
     }
+
+    public Map<OrderStatus, Long> getTotalOrdersByStatus() {
+        return commandeRepository.findAll().stream().collect(Collectors.groupingBy(c -> c.getStatus(), Collectors.counting()));
+    }
+
 
 
 }
