@@ -5,6 +5,7 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import ClientDashboard from '../pages/client/ClientDashboard';
 import UnauthorizedPage from '../pages/error/UnauthorizedPage';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
+import ProductsListPage from '../pages/products/ProductsListPage';
 
 const AppRoutes: React.FC = () => {
     return (
@@ -27,6 +28,15 @@ const AppRoutes: React.FC = () => {
                     element={
                         <ProtectedRoute allowedRoles={['CLIENT']}>
                             <ClientDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/products"
+                    element={
+                        <ProtectedRoute allowedRoles={['ADMIN', 'CLIENT']}>
+                            <ProductsListPage />
                         </ProtectedRoute>
                     }
                 />
