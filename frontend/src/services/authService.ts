@@ -1,15 +1,13 @@
 import api from './api';
 
 export interface LoginCredentials {
-    email: string;
+    username: string;
     password: string;
 }
 
 export interface User {
     id: number;
-    email: string;
-    firstName?: string;
-    lastName?: string;
+    username: string;
     role: 'ADMIN' | 'CLIENT';
 }
 

@@ -42,7 +42,7 @@ describe('LoginPage', () => {
 
     test('renders login form correctly', () => {
         renderComponent();
-        expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Username/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Login/i })).toBeInTheDocument();
     });
@@ -53,33 +53,33 @@ describe('LoginPage', () => {
         fireEvent.click(screen.getByRole('button', { name: /Login/i }));
 
         await waitFor(() => {
-            expect(screen.getByText(/Email is required/i)).toBeInTheDocument();
+            expect(screen.getByText(/Username is required/i)).toBeInTheDocument();
             expect(screen.getByText(/Password is required/i)).toBeInTheDocument();
         });
     });
 
-    test('validates email format', async () => {
+    test('validates username format', async () => {
         renderComponent();
 
-        fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'invalid-email' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'invalid-username' } });
         fireEvent.click(screen.getByRole('button', { name: /Login/i }));
 
         await waitFor(() => {
-            expect(screen.getByText(/Invalid email address/i)).toBeInTheDocument();
+            expect(screen.getByText(/Invalid username/i)).toBeInTheDocument();
         });
     });
 
     test('dispatches login action with valid data', async () => {
         renderComponent();
 
-        fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'test@example.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'testUsername' } });
+        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password' } });
         fireEvent.click(screen.getByRole('button', { name: /Login/i }));
 
         await waitFor(() => {
             expect(loginUser).toHaveBeenCalledWith({
-                email: 'test@example.com',
-                password: 'password123'
+                username: 'testUsername',
+                password: 'password'
             });
         });
     });

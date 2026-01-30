@@ -37,20 +37,16 @@ const LoginPage = () => {
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div style={{ marginBottom: '15px' }}>
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="username">Username</label>
                     <input
-                        id="email"
-                        type="email"
+                        id="username"
+                        type="text"
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-                        {...register('email', {
-                            required: 'Email is required',
-                            pattern: {
-                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                message: "Invalid email address"
-                            }
+                        {...register('username', {
+                            required: 'Username is required',
                         })}
                     />
-                    {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
+                    {errors.username && <span style={{ color: 'red', fontSize: '12px' }}>{errors.username.message}</span>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
