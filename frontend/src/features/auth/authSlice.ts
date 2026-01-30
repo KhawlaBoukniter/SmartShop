@@ -9,10 +9,13 @@ interface AuthState {
     error: string | null;
 }
 
+const saved = localStorage.getItem("auth");
+const user = saved ? JSON.parse(saved) : null;
+
 const initialState: AuthState = {
-    user: null,
-    role: null,
-    isAuthenticated: false,
+    user: user,
+    role: user?.role ?? null,
+    isAuthenticated: user !== null,
     loading: false,
     error: null,
 };
@@ -55,6 +58,7 @@ const authSlice = createSlice({
                 state.isAuthenticated = true;
                 state.user = action.payload;
                 state.role = action.payload.role;
+                localStorage.setItem("auth", JSON.stringify(action.payload));
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
@@ -64,6 +68,7 @@ const authSlice = createSlice({
                 state.role = null;
             })
             .addCase(logoutUser.fulfilled, (state) => {
+                localStorage.removeItem("auth");
                 state.user = null;
                 state.role = null;
                 state.isAuthenticated = false;
