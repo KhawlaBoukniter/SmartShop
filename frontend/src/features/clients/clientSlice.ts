@@ -8,6 +8,8 @@ interface ClientState {
     error: string | null;
     createError: string | null;
     creating: boolean;
+    deletingId: number | null;
+    deleteError: string | null;
 }
 
 const initialState: ClientState = {
@@ -17,20 +19,26 @@ const initialState: ClientState = {
     error: null,
     createError: null,
     creating: false,
+    deletingId: null,
+    deleteError: null,
 };
 
 const formatErrorMessage = (raw: string) => {
-  const msg = raw.toLowerCase();
+    const msg = raw.toLowerCase();
 
-  if (msg.includes("users_username_key") || msg.includes("username") && msg.includes("existe déjà")) {
-    return "Ce nom d’utilisateur est déjà utilisé. Choisis-en un autre.";
-  }
+    if (msg.includes("users_username_key") || msg.includes("username") && msg.includes("existe déjà")) {
+        return "Ce nom d’utilisateur est déjà utilisé. Choisis-en un autre.";
+    }
 
-  if (msg.includes("duplicate") || msg.includes("clé dupliquée") || msg.includes("unique")) {
-    return "Une valeur existe déjà. Vérifie les informations et réessaie.";
-  }
+    if (msg.includes("duplicate") || msg.includes("clé dupliquée") || msg.includes("unique")) {
+        return "Une valeur existe déjà. Vérifie les informations et réessaie.";
+    }
 
-  return "Création impossible. Vérifie les informations saisies.";
+    if (msg.includes("constraint") || msg.includes("foreign key")) {
+        return "Impossible de supprimer ce client car il est lié à des commandes.";
+    }
+
+    return "Opération impossible. Vérifie les informations ou réessaie.";
 };
 
 
@@ -63,7 +71,13 @@ export const deleteClient = createAsyncThunk(
             await clientService.deleteClient(id);
             return id;
         } catch (error: any) {
-            return thunkAPI.rejectWithValue("Failed to delete client");
+            const status = error?.response?.status;
+            const msg = error?.response?.data?.message || error?.response?.data || "Suppression impossible.";
+
+            if (status === 401) return thunkAPI.rejectWithValue("Session expirée. Reconnecte-toi.");
+            if (status === 403) return thunkAPI.rejectWithValue("Accès refusé.");
+
+            return thunkAPI.rejectWithValue(formatErrorMessage(msg));
         }
     }
 );
@@ -130,8 +144,18 @@ const clientSlice = createSlice({
                 state.creating = false;
                 state.createError = (action.payload as string) ?? "Failed to create client";
             })
+            .addCase(deleteClient.pending, (state, action) => {
+                state.deletingId = action.meta.arg;
+                state.deleteError = null;
+            })
             .addCase(deleteClient.fulfilled, (state, action: PayloadAction<number>) => {
                 state.items = state.items.filter(item => item.id !== action.payload);
+                state.deletingId = null;
+                state.deleteError = null;
+            })
+            .addCase(deleteClient.rejected, (state, action) => {
+                state.deletingId = null;
+                state.deleteError = action.payload as string;
             });
     },
 });

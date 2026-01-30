@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchClients, createClient } from '../../../features/clients/clientSlice';
+import { fetchClients, createClient, deleteClient } from '../../../features/clients/clientSlice';
 import type { RootState, AppDispatch } from '../../../app/store';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -9,7 +9,7 @@ import type { CreateClientRequest } from '../../../services/clientService';
 const ClientsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { items, loading, error, creating, createError } = useSelector((state: RootState) => state.clients);
+    const { items, loading, error, creating, createError, deletingId, deleteError } = useSelector((state: RootState) => state.clients);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateClientRequest>();
@@ -27,6 +27,12 @@ const ClientsListPage = () => {
         });
     };
 
+    const handleDelete = (id: number) => {
+        if (window.confirm("Supprimer ce client ? Cette action est irréversible.")) {
+            dispatch(deleteClient(id));
+        }
+    };
+
     if (loading && items.length === 0) return <div>Loading...</div>;
     if (error && items.length === 0) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
@@ -38,6 +44,8 @@ const ClientsListPage = () => {
             </div>
 
             {error && <div style={{ color: 'red', marginBottom: '10px' }}>Global Error: {error}</div>}
+            {deleteError && <div style={{ color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffe6e6', border: '1px solid red' }}>{deleteError}</div>}
+
 
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd', marginTop: '20px' }}>
                 <thead>
@@ -76,7 +84,13 @@ const ClientsListPage = () => {
                                 >
                                     View
                                 </button>
-                                <button disabled>Delete</button>
+                                <button
+                                    onClick={() => handleDelete(client.id)}
+                                    disabled={deletingId === client.id}
+                                    style={{ cursor: deletingId === client.id ? 'not-allowed' : 'pointer', color: 'red' }}
+                                >
+                                    {deletingId === client.id ? 'Deleting...' : 'Delete'}
+                                </button>
                             </td>
                         </tr>
                     ))}
