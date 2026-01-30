@@ -5,15 +5,27 @@ export interface ClientDTO {
     username: string;
     name: string;
     email: string;
-    role: 'ADMIN' | 'CLIENT';
-    tier?: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'; // Enums from backend
+    role: 'CLIENT';
+    tier?: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
     totalOrders?: number;
     totalSpent?: number;
     firstOrderDate?: string;
     lastOrderDate?: string;
 }
 
+export interface CreateClientRequest {
+    username: string;
+    name: string;
+    email: string;
+    password?: string;
+}
+
 const clientService = {
+    createClient: async (data: CreateClientRequest) => {
+        const response = await api.post<ClientDTO>('/clients', data);
+        return response.data;
+    },
+
     getAllClients: async () => {
         const response = await api.get<ClientDTO[]>('/clients');
         return response.data;

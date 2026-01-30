@@ -1,26 +1,42 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchClients } from '../../../features/clients/clientSlice';
+import { fetchClients, createClient } from '../../../features/clients/clientSlice';
 import type { RootState, AppDispatch } from '../../../app/store';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import type { CreateClientRequest } from '../../../services/clientService';
 
 const ClientsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { items, loading, error } = useSelector((state: RootState) => state.clients);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateClientRequest>();
 
     useEffect(() => {
         dispatch(fetchClients());
     }, [dispatch]);
+
+    const onSubmit = (data: CreateClientRequest) => {
+        dispatch(createClient(data)).then((action) => {
+            if (createClient.fulfilled.match(action)) {
+                setIsModalOpen(false);
+                reset();
+            }
+        });
+    };
 
     if (loading && items.length === 0) return <div>Loading...</div>;
     if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
     return (
         <div style={{ padding: '20px' }}>
-            <h2>Clients Management</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2>Clients Management</h2>
+                <button onClick={() => setIsModalOpen(true)} style={{ padding: '8px 16px' }}>New Client</button>
+            </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd', marginTop: '20px' }}>
                 <thead>
                     <tr style={{ backgroundColor: '#f2f2f2' }}>
                         <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>ID</th>
@@ -63,6 +79,44 @@ const ClientsListPage = () => {
                     ))}
                 </tbody>
             </table>
+
+            {isModalOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}>
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                        <h3>Add New Client</h3>
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Username</label>
+                                <input {...register('username', { required: true })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.username && <span style={{ color: 'red' }}>Required</span>}
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Name</label>
+                                <input {...register('name', { required: true })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.name && <span style={{ color: 'red' }}>Required</span>}
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Email</label>
+                                <input type="email" {...register('email', { required: true })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.email && <span style={{ color: 'red' }}>Required</span>}
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Password</label>
+                                <input type="password" {...register('password', { required: true })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.password && <span style={{ color: 'red' }}>Required</span>}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                <button type="button" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                                <button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create'}</button>
+                            </div>
+                            {error && <p style={{ color: 'red' }}>{error}</p>}
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import clientService, { type ClientDTO } from '../../services/clientService';
+import clientService, { type ClientDTO, type CreateClientRequest } from '../../services/clientService';
 
 interface ClientState {
     items: ClientDTO[];
@@ -49,6 +49,21 @@ export const deleteClient = createAsyncThunk(
     }
 );
 
+export const createClient = createAsyncThunk(
+    'clients/createClient',
+    async (data: CreateClientRequest, thunkAPI) => {
+        try {
+            return await clientService.createClient(data);
+        } catch (error: any) {
+            const msg =
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                "Failed to create client";
+            return thunkAPI.rejectWithValue(String(msg));
+        }
+    }
+);
+
 const clientSlice = createSlice({
     name: 'clients',
     initialState,
@@ -80,6 +95,18 @@ const clientSlice = createSlice({
                 state.selectedClient = action.payload;
             })
             .addCase(fetchClientDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(createClient.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createClient.fulfilled, (state, action: PayloadAction<ClientDTO>) => {
+                state.loading = false;
+                state.items.push(action.payload);
+            })
+            .addCase(createClient.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
