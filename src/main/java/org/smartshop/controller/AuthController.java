@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -22,9 +24,12 @@ public class AuthController {
                 .map(user -> {
                     session.setAttribute("userId", user.getId());
                     session.setAttribute("role", user.getRole().name());
-                    return ResponseEntity.ok("Login successful");
+                    return ResponseEntity.ok(Map.of(
+                            "id", user.getId(),
+                            "role", user.getRole().name()
+                    ));
                 })
-                .orElse(ResponseEntity.status(401).body("Identifiants incorrects"));
+                .orElse(ResponseEntity.status(401).body(Map.of("message", "Identifiants incorrects")));
     }
 
     @PostMapping("/logout")

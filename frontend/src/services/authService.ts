@@ -5,19 +5,16 @@ export interface LoginCredentials {
     password: string;
 }
 
+export type Role = 'ADMIN' | 'CLIENT';
+
 export interface User {
     id: number;
-    username: string;
-    role: 'ADMIN' | 'CLIENT';
-}
-
-export interface AuthResponse {
-    user: User;
+    role: Role;
 }
 
 const login = async (credentials: LoginCredentials): Promise<User> => {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
-    return response.data.user;
+    const response = await api.post<User>('/auth/login', credentials);
+    return response.data;
 };
 
 const logout = async (): Promise<void> => {

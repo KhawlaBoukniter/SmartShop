@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import authService, { type LoginCredentials, type User } from '../../services/authService';
+import authService, { type LoginCredentials, type Role, type User } from '../../services/authService';
 
 interface AuthState {
     user: User | null;
-    role: 'ADMIN' | 'CLIENT' | null;
+    role: Role | null;
     isAuthenticated: boolean;
     loading: boolean;
     error: string | null;
@@ -42,11 +42,6 @@ const authSlice = createSlice({
     reducers: {
         resetError: (state) => {
             state.error = null;
-        },
-        setUser: (state, action: PayloadAction<User>) => {
-            state.user = action.payload;
-            state.role = action.payload.role;
-            state.isAuthenticated = true;
         }
     },
     extraReducers: (builder) => {
@@ -76,5 +71,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { resetError, setUser } = authSlice.actions;
+export const { resetError } = authSlice.actions;
 export default authSlice.reducer;
