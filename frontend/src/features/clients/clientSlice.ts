@@ -6,6 +6,8 @@ interface ClientState {
     selectedClient: ClientDTO | null;
     loading: boolean;
     error: string | null;
+    createError: string | null;
+    creating: boolean;
 }
 
 const initialState: ClientState = {
@@ -13,7 +15,24 @@ const initialState: ClientState = {
     selectedClient: null,
     loading: false,
     error: null,
+    createError: null,
+    creating: false,
 };
+
+const formatErrorMessage = (raw: string) => {
+  const msg = raw.toLowerCase();
+
+  if (msg.includes("users_username_key") || msg.includes("username") && msg.includes("existe déjà")) {
+    return "Ce nom d’utilisateur est déjà utilisé. Choisis-en un autre.";
+  }
+
+  if (msg.includes("duplicate") || msg.includes("clé dupliquée") || msg.includes("unique")) {
+    return "Une valeur existe déjà. Vérifie les informations et réessaie.";
+  }
+
+  return "Création impossible. Vérifie les informations saisies.";
+};
+
 
 export const fetchClients = createAsyncThunk(
     'clients/fetchClients',
@@ -59,7 +78,7 @@ export const createClient = createAsyncThunk(
                 error?.response?.data?.message ||
                 error?.response?.data ||
                 "Failed to create client";
-            return thunkAPI.rejectWithValue(String(msg));
+            return thunkAPI.rejectWithValue(formatErrorMessage(msg));
         }
     }
 );
@@ -99,16 +118,17 @@ const clientSlice = createSlice({
                 state.error = action.payload as string;
             })
             .addCase(createClient.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+                state.creating = true;
+                state.createError = null;
             })
-            .addCase(createClient.fulfilled, (state, action: PayloadAction<ClientDTO>) => {
-                state.loading = false;
-                state.items.push(action.payload);
+            .addCase(createClient.fulfilled, (state, action) => {
+                state.creating = false;
+                state.createError = null;
+                state.items.push(action.payload)
             })
             .addCase(createClient.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+                state.creating = false;
+                state.createError = (action.payload as string) ?? "Failed to create client";
             })
             .addCase(deleteClient.fulfilled, (state, action: PayloadAction<number>) => {
                 state.items = state.items.filter(item => item.id !== action.payload);

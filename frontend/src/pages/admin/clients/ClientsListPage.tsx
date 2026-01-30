@@ -9,8 +9,9 @@ import type { CreateClientRequest } from '../../../services/clientService';
 const ClientsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { items, loading, error } = useSelector((state: RootState) => state.clients);
+    const { items, loading, error, creating, createError } = useSelector((state: RootState) => state.clients);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateClientRequest>();
 
     useEffect(() => {
@@ -27,7 +28,7 @@ const ClientsListPage = () => {
     };
 
     if (loading && items.length === 0) return <div>Loading...</div>;
-    if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
+    if (error && items.length === 0) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
     return (
         <div style={{ padding: '20px' }}>
@@ -35,6 +36,8 @@ const ClientsListPage = () => {
                 <h2>Clients Management</h2>
                 <button onClick={() => setIsModalOpen(true)} style={{ padding: '8px 16px' }}>New Client</button>
             </div>
+
+            {error && <div style={{ color: 'red', marginBottom: '10px' }}>Global Error: {error}</div>}
 
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd', marginTop: '20px' }}>
                 <thead>
@@ -110,9 +113,9 @@ const ClientsListPage = () => {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                                 <button type="button" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                                <button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create'}</button>
+                                <button type="submit" disabled={creating}>{creating ? 'Creating...' : 'Create'}</button>
                             </div>
-                            {error && <p style={{ color: 'red' }}>{error}</p>}
+                            {createError && <p style={{ color: 'red', marginTop: '10px' }}>{createError}</p>}
                         </form>
                     </div>
                 </div>
