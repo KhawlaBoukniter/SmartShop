@@ -13,6 +13,8 @@ interface ProductState {
     deleteError: string | null;
     updating: boolean;
     updateError: string | null;
+    creating: boolean;
+    createError: string | null;
 }
 
 const initialState: ProductState = {
@@ -27,6 +29,8 @@ const initialState: ProductState = {
     deleteError: null,
     updating: false,
     updateError: null,
+    creating: false,
+    createError: null,
 };
 
 const formatErrorMessage = (raw: string) => {
@@ -76,6 +80,18 @@ export const updateProduct = createAsyncThunk(
             return await productService.updateProduct(id, data);
         } catch (error: any) {
             const msg = error?.response?.data?.message || error?.response?.data || "Update failed";
+            return thunkAPI.rejectWithValue(formatErrorMessage(msg));
+        }
+    }
+);
+
+export const createProduct = createAsyncThunk(
+    'products/createProduct',
+    async (data: ProductDTO, thunkAPI) => {
+        try {
+            return await productService.createProduct(data);
+        } catch (error: any) {
+            const msg = error?.response?.data?.message || error?.response?.data || "Creation failed";
             return thunkAPI.rejectWithValue(formatErrorMessage(msg));
         }
     }
@@ -136,6 +152,19 @@ const productSlice = createSlice({
             .addCase(updateProduct.rejected, (state, action) => {
                 state.updating = false;
                 state.updateError = action.payload as string;
+            })
+            .addCase(createProduct.pending, (state) => {
+                state.creating = true;
+                state.createError = null;
+            })
+            .addCase(createProduct.fulfilled, (state, action) => {
+                state.creating = false;
+                state.createError = null;
+                state.items.push(action.payload);
+            })
+            .addCase(createProduct.rejected, (state, action) => {
+                state.creating = false;
+                state.createError = action.payload as string;
             });
     },
 });

@@ -35,6 +35,11 @@ const productService = {
     updateProduct: async (id: number, data: ProductDTO) => {
         const response = await api.put<ProductDTO>(`/products/${id}`, data);
         return response.data;
+    },
+
+    createProduct: async (data: ProductDTO) => {
+        const response = await api.post<ProductDTO>('/products', data);
+        return response.data;
     }
 
 };

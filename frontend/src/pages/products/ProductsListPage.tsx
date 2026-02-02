@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, setPage, setSearchName, deleteProduct, updateProduct } from '../../features/products/productSlice';
+import { fetchProducts, setPage, setSearchName, deleteProduct, updateProduct, createProduct } from '../../features/products/productSlice';
 import type { RootState, AppDispatch } from '../../app/store';
 import { useForm } from 'react-hook-form';
 import type { ProductDTO } from '../../services/productService';
 
 const ProductsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { items, loading, error, page, totalPages, searchName, size, deletingId, deleteError, updating, updateError } = useSelector((state: RootState) => state.products);
+    const { items, loading, error, page, totalPages, searchName, size, deletingId, deleteError, updating, updateError, creating, createError } = useSelector((state: RootState) => state.products);
     const { role } = useSelector((state: RootState) => state.auth);
 
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(null);
     const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<ProductDTO>();
 
@@ -41,20 +41,35 @@ const ProductsListPage = () => {
             setValue('name', selectedProduct.name);
             setValue('price', selectedProduct.price);
             setValue('stock', selectedProduct.stock);
+        } else {
+            reset();
         }
-    }, [selectedProduct, setValue]);
+    }, [selectedProduct, setValue, reset]);
 
     const handleEdit = (product: ProductDTO) => {
         setSelectedProduct(product);
-        setIsEditModalOpen(true);
+        setIsModalOpen(true);
     };
 
-    const onUpdateSubmit = (data: ProductDTO) => {
+    const handleCreate = () => {
+        setSelectedProduct(null);
+        setIsModalOpen(true);
+        reset();
+    };
+
+    const onSubmit = (data: ProductDTO) => {
         if (selectedProduct) {
             dispatch(updateProduct({ id: selectedProduct.id, data })).then((action) => {
                 if (updateProduct.fulfilled.match(action)) {
-                    setIsEditModalOpen(false);
+                    setIsModalOpen(false);
                     setSelectedProduct(null);
+                    reset();
+                }
+            });
+        } else {
+            dispatch(createProduct(data)).then((action) => {
+                if (createProduct.fulfilled.match(action)) {
+                    setIsModalOpen(false);
                     reset();
                 }
             });
@@ -68,7 +83,7 @@ const ProductsListPage = () => {
         <div style={{ padding: '20px' }}>
             <h2>Products</h2>
 
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <input
                     type="text"
                     placeholder="Search by name..."
@@ -76,6 +91,9 @@ const ProductsListPage = () => {
                     onChange={handleSearch}
                     style={{ padding: '8px', width: '300px' }}
                 />
+                {role === 'ADMIN' && (
+                    <button onClick={handleCreate} style={{ padding: '8px 16px' }}>Add Product</button>
+                )}
             </div>
 
             {error && <div style={{ color: 'red', marginBottom: '10px' }}>Global Error: {error}</div>}
@@ -128,14 +146,14 @@ const ProductsListPage = () => {
                 <button onClick={handleNext} disabled={page >= totalPages - 1 || loading}>Next</button>
             </div>
 
-            {isEditModalOpen && (
+            {isModalOpen && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                     backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
                 }}>
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
-                        <h3>Edit Product</h3>
-                        <form onSubmit={handleSubmit(onUpdateSubmit)}>
+                        <h3>{selectedProduct ? 'Edit Product' : 'Add Product'}</h3>
+                        <form onSubmit={handleSubmit(onSubmit)}>
                             <div style={{ marginBottom: '10px' }}>
                                 <label>Name</label>
                                 <input {...register('name', { required: true })} style={{ width: '100%', padding: '5px' }} />
@@ -153,10 +171,13 @@ const ProductsListPage = () => {
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                <button type="button" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
-                                <button type="submit" disabled={updating}>{updating ? 'Updating...' : 'Update'}</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                                <button type="submit" disabled={updating || creating}>
+                                    {updating || creating ? 'Saving...' : 'Save'}
+                                </button>
                             </div>
-                            {updateError && <p style={{ color: 'red', marginTop: '10px' }}>{updateError}</p>}
+                            {updateError && <p style={{ color: 'red', marginTop: '10px' }}>Update Error: {updateError}</p>}
+                            {createError && <p style={{ color: 'red', marginTop: '10px' }}>Create Error: {createError}</p>}
                         </form>
                     </div>
                 </div>
