@@ -3,6 +3,7 @@ import api from './api';
 export interface OrderItemDTO {
     id?: number;
     productId: number;
+    commandeId?: number;
     quantity: number;
     unitPrice: number;
     total: number;
@@ -10,10 +11,16 @@ export interface OrderItemDTO {
 
 export interface PaymentDTO {
     id?: number;
-    paymentMethod: string;
-    paymentStatus: string;
+    commandeId?: number;
+    number?: number;
     amount: number;
-    date: string;
+    paymentType: string;
+    reference?: string;
+    datePayment: string;
+    dateReceipt?: string;
+    bank?: string;
+    deadline?: string;
+    paymentStatus: string;
 }
 
 export interface OrderDTO {
@@ -24,6 +31,7 @@ export interface OrderDTO {
     remise: number;
     tva: number;
     total: number;
+    promoCode?: string;
     status: string;
     montantRestant: number;
     items: OrderItemDTO[];
@@ -33,6 +41,10 @@ export interface OrderDTO {
 const orderService = {
     getAllOrders: async () => {
         const response = await api.get<OrderDTO[]>('/orders');
+        return response.data;
+    },
+    getOrder: async (id: number) => {
+        const response = await api.get<OrderDTO>(`/orders/${id}`);
         return response.data;
     }
 };
