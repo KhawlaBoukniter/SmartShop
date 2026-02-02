@@ -9,6 +9,7 @@ import ProductsListPage from '../pages/products/ProductsListPage';
 import ClientsListPage from '../pages/admin/clients/ClientsListPage';
 import ClientDetailsPage from '../pages/admin/clients/ClientDetailsPage';
 import OrdersListPage from '../pages/orders/OrdersListPage';
+import OrderDetailsPage from '../pages/orders/OrderDetailsPage';
 
 const AppRoutes: React.FC = () => {
     return (
@@ -67,6 +68,15 @@ const AppRoutes: React.FC = () => {
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN']}>
                             <OrdersListPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin/orders/:id"
+                    element={
+                        <ProtectedRoute allowedRoles={['ADMIN']}>
+                            <OrderDetailsPage />
                         </ProtectedRoute>
                     }
                 />

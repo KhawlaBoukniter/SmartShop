@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { fetchOrders } from '../../features/orders/orderSlice';
 import type { RootState, AppDispatch } from '../../app/store';
 
 const OrdersListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
     const { items, loading, error } = useSelector((state: RootState) => state.orders);
 
     useEffect(() => {
@@ -31,6 +33,7 @@ const OrdersListPage = () => {
                             <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Date</th>
                             <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Total (DH)</th>
                             <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Status</th>
+                            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,6 +44,9 @@ const OrdersListPage = () => {
                                 <td style={{ padding: '8px', border: '1px solid #ddd' }}>{new Date(order.date).toLocaleDateString()} {new Date(order.date).toLocaleTimeString()}</td>
                                 <td style={{ padding: '8px', border: '1px solid #ddd' }}>{order.total}</td>
                                 <td style={{ padding: '8px', border: '1px solid #ddd' }}>{order.status}</td>
+                                <td style={{ padding: '8px', border: '1px solid #ddd' }}>
+                                    <button onClick={() => navigate(`/admin/orders/${order.id}`)} style={{ cursor: 'pointer' }}>Voir</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
