@@ -30,6 +30,11 @@ const productService = {
 
     deleteProduct: async (id: number) => {
         await api.delete(`/products/${id}`);
+    },
+
+    updateProduct: async (id: number, data: ProductDTO) => {
+        const response = await api.put<ProductDTO>(`/products/${id}`, data);
+        return response.data;
     }
 
 };

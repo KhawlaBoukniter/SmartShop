@@ -11,6 +11,8 @@ interface ProductState {
     searchName: string;
     deletingId: number | null;
     deleteError: string | null;
+    updating: boolean;
+    updateError: string | null;
 }
 
 const initialState: ProductState = {
@@ -23,6 +25,8 @@ const initialState: ProductState = {
     searchName: '',
     deletingId: null,
     deleteError: null,
+    updating: false,
+    updateError: null,
 };
 
 const formatErrorMessage = (raw: string) => {
@@ -30,7 +34,7 @@ const formatErrorMessage = (raw: string) => {
     if (msg.includes("constraint") || msg.includes("foreign key")) {
         return "Impossible de supprimer ce produit car il est lié à des commandes.";
     }
-    return "Suppression impossible. Réessaie.";
+    return "Opération impossible. Vérifie les informations.";
 };
 
 export const fetchProducts = createAsyncThunk(
@@ -60,6 +64,18 @@ export const deleteProduct = createAsyncThunk(
             if (status === 401) return thunkAPI.rejectWithValue("Session expirée. Reconnecte-toi.");
             if (status === 403) return thunkAPI.rejectWithValue("Accès refusé.");
 
+            return thunkAPI.rejectWithValue(formatErrorMessage(msg));
+        }
+    }
+);
+
+export const updateProduct = createAsyncThunk(
+    'products/updateProduct',
+    async ({ id, data }: { id: number; data: ProductDTO }, thunkAPI) => {
+        try {
+            return await productService.updateProduct(id, data);
+        } catch (error: any) {
+            const msg = error?.response?.data?.message || error?.response?.data || "Update failed";
             return thunkAPI.rejectWithValue(formatErrorMessage(msg));
         }
     }
@@ -104,6 +120,22 @@ const productSlice = createSlice({
             .addCase(deleteProduct.rejected, (state, action) => {
                 state.deletingId = null;
                 state.deleteError = action.payload as string;
+            })
+            .addCase(updateProduct.pending, (state) => {
+                state.updating = true;
+                state.updateError = null;
+            })
+            .addCase(updateProduct.fulfilled, (state, action) => {
+                state.updating = false;
+                state.updateError = null;
+                const index = state.items.findIndex(p => p.id === action.payload.id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
+            })
+            .addCase(updateProduct.rejected, (state, action) => {
+                state.updating = false;
+                state.updateError = action.payload as string;
             });
     },
 });

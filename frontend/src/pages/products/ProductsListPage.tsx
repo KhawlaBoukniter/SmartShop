@@ -1,12 +1,18 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, setPage, setSearchName, deleteProduct } from '../../features/products/productSlice';
+import { fetchProducts, setPage, setSearchName, deleteProduct, updateProduct } from '../../features/products/productSlice';
 import type { RootState, AppDispatch } from '../../app/store';
+import { useForm } from 'react-hook-form';
+import type { ProductDTO } from '../../services/productService';
 
 const ProductsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { items, loading, error, page, totalPages, searchName, size, deletingId, deleteError } = useSelector((state: RootState) => state.products);
+    const { items, loading, error, page, totalPages, searchName, size, deletingId, deleteError, updating, updateError } = useSelector((state: RootState) => state.products);
     const { role } = useSelector((state: RootState) => state.auth);
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(null);
+    const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<ProductDTO>();
 
     useEffect(() => {
         dispatch(fetchProducts({ name: searchName, page, size }));
@@ -27,6 +33,31 @@ const ProductsListPage = () => {
     const handleDelete = (id: number) => {
         if (window.confirm("Supprimer ce produit ? Cette action est irréversible.")) {
             dispatch(deleteProduct(id));
+        }
+    };
+
+    useEffect(() => {
+        if (selectedProduct) {
+            setValue('name', selectedProduct.name);
+            setValue('price', selectedProduct.price);
+            setValue('stock', selectedProduct.stock);
+        }
+    }, [selectedProduct, setValue]);
+
+    const handleEdit = (product: ProductDTO) => {
+        setSelectedProduct(product);
+        setIsEditModalOpen(true);
+    };
+
+    const onUpdateSubmit = (data: ProductDTO) => {
+        if (selectedProduct) {
+            dispatch(updateProduct({ id: selectedProduct.id, data })).then((action) => {
+                if (updateProduct.fulfilled.match(action)) {
+                    setIsEditModalOpen(false);
+                    setSelectedProduct(null);
+                    reset();
+                }
+            });
         }
     };
 
@@ -71,7 +102,12 @@ const ProductsListPage = () => {
                             <td style={{ padding: '8px', border: '1px solid #ddd' }}>{product.stock}</td>
                             {role === 'ADMIN' && (
                                 <td style={{ padding: '8px', border: '1px solid #ddd' }}>
-                                    <button style={{ marginRight: '5px' }} disabled>Edit</button>
+                                    <button
+                                        onClick={() => handleEdit(product)}
+                                        style={{ marginRight: '5px', cursor: 'pointer' }}
+                                    >
+                                        Edit
+                                    </button>
                                     <button
                                         onClick={() => handleDelete(product.id)}
                                         disabled={deletingId === product.id}
@@ -91,6 +127,40 @@ const ProductsListPage = () => {
                 <span>Page {page + 1} of {totalPages}</span>
                 <button onClick={handleNext} disabled={page >= totalPages - 1 || loading}>Next</button>
             </div>
+
+            {isEditModalOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}>
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '400px' }}>
+                        <h3>Edit Product</h3>
+                        <form onSubmit={handleSubmit(onUpdateSubmit)}>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Name</label>
+                                <input {...register('name', { required: true })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.name && <span style={{ color: 'red' }}>Required</span>}
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Price</label>
+                                <input type="number" step="0.01" {...register('price', { required: true, min: 0 })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.price && <span style={{ color: 'red' }}>Required (Min 0)</span>}
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label>Stock</label>
+                                <input type="number" {...register('stock', { required: true, min: 0 })} style={{ width: '100%', padding: '5px' }} />
+                                {errors.stock && <span style={{ color: 'red' }}>Required (Min 0)</span>}
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                                <button type="button" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+                                <button type="submit" disabled={updating}>{updating ? 'Updating...' : 'Update'}</button>
+                            </div>
+                            {updateError && <p style={{ color: 'red', marginTop: '10px' }}>{updateError}</p>}
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
