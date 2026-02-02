@@ -10,6 +10,8 @@ interface ClientState {
     creating: boolean;
     deletingId: number | null;
     deleteError: string | null;
+    updating: boolean;
+    updateError: string | null;
 }
 
 const initialState: ClientState = {
@@ -21,6 +23,8 @@ const initialState: ClientState = {
     creating: false,
     deletingId: null,
     deleteError: null,
+    updating: false,
+    updateError: null,
 };
 
 const formatErrorMessage = (raw: string) => {
@@ -97,6 +101,21 @@ export const createClient = createAsyncThunk(
     }
 );
 
+export const updateClient = createAsyncThunk(
+    'clients/updateClient',
+    async ({ id, data }: { id: number; data: Partial<ClientDTO> }, thunkAPI) => {
+        try {
+            return await clientService.updateClient(id, data);
+        } catch (error: any) {
+            const msg =
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                "Failed to update client";
+            return thunkAPI.rejectWithValue(formatErrorMessage(msg));
+        }
+    }
+);
+
 const clientSlice = createSlice({
     name: 'clients',
     initialState,
@@ -156,6 +175,23 @@ const clientSlice = createSlice({
             .addCase(deleteClient.rejected, (state, action) => {
                 state.deletingId = null;
                 state.deleteError = action.payload as string;
+            })
+            .addCase(updateClient.pending, (state) => {
+                state.updating = true;
+                state.updateError = null;
+            })
+            .addCase(updateClient.fulfilled, (state, action) => {
+                state.updating = false;
+                state.updateError = null;
+                state.selectedClient = action.payload;
+                const index = state.items.findIndex(item => item.id === action.payload.id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
+            })
+            .addCase(updateClient.rejected, (state, action) => {
+                state.updating = false;
+                state.updateError = action.payload as string;
             });
     },
 });
