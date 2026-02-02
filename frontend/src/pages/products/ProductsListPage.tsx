@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, setPage, setSearchName } from '../../features/products/productSlice';
+import { fetchProducts, setPage, setSearchName, deleteProduct } from '../../features/products/productSlice';
 import type { RootState, AppDispatch } from '../../app/store';
 
 const ProductsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { items, loading, error, page, totalPages, searchName, size } = useSelector((state: RootState) => state.products);
+    const { items, loading, error, page, totalPages, searchName, size, deletingId, deleteError } = useSelector((state: RootState) => state.products);
     const { role } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
@@ -24,8 +24,14 @@ const ProductsListPage = () => {
         if (page < totalPages - 1) dispatch(setPage(page + 1));
     };
 
+    const handleDelete = (id: number) => {
+        if (window.confirm("Supprimer ce produit ? Cette action est irréversible.")) {
+            dispatch(deleteProduct(id));
+        }
+    };
+
     if (loading && items.length === 0) return <div>Loading...</div>;
-    if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
+    if (error && items.length === 0) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
     return (
         <div style={{ padding: '20px' }}>
@@ -40,6 +46,9 @@ const ProductsListPage = () => {
                     style={{ padding: '8px', width: '300px' }}
                 />
             </div>
+
+            {error && <div style={{ color: 'red', marginBottom: '10px' }}>Global Error: {error}</div>}
+            {deleteError && <div style={{ color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffe6e6', border: '1px solid red' }}>{deleteError}</div>}
 
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
                 <thead>
@@ -63,7 +72,13 @@ const ProductsListPage = () => {
                             {role === 'ADMIN' && (
                                 <td style={{ padding: '8px', border: '1px solid #ddd' }}>
                                     <button style={{ marginRight: '5px' }} disabled>Edit</button>
-                                    <button disabled>Delete</button>
+                                    <button
+                                        onClick={() => handleDelete(product.id)}
+                                        disabled={deletingId === product.id}
+                                        style={{ cursor: deletingId === product.id ? 'not-allowed' : 'pointer', color: 'red' }}
+                                    >
+                                        {deletingId === product.id ? 'Deleting...' : 'Delete'}
+                                    </button>
                                 </td>
                             )}
                         </tr>

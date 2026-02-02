@@ -9,6 +9,8 @@ interface ProductState {
     size: number;
     totalPages: number;
     searchName: string;
+    deletingId: number | null;
+    deleteError: string | null;
 }
 
 const initialState: ProductState = {
@@ -19,6 +21,16 @@ const initialState: ProductState = {
     size: 10,
     totalPages: 0,
     searchName: '',
+    deletingId: null,
+    deleteError: null,
+};
+
+const formatErrorMessage = (raw: string) => {
+    const msg = raw.toLowerCase();
+    if (msg.includes("constraint") || msg.includes("foreign key")) {
+        return "Impossible de supprimer ce produit car il est lié à des commandes.";
+    }
+    return "Suppression impossible. Réessaie.";
 };
 
 export const fetchProducts = createAsyncThunk(
@@ -31,6 +43,24 @@ export const fetchProducts = createAsyncThunk(
             return await productService.getAllProducts(name, page, size);
         } catch (error: any) {
             return thunkAPI.rejectWithValue("Failed to fetch products");
+        }
+    }
+);
+
+export const deleteProduct = createAsyncThunk(
+    'products/deleteProduct',
+    async (id: number, thunkAPI) => {
+        try {
+            await productService.deleteProduct(id);
+            return id;
+        } catch (error: any) {
+            const status = error?.response?.status;
+            const msg = error?.response?.data?.message || error?.response?.data || "Suppression impossible.";
+
+            if (status === 401) return thunkAPI.rejectWithValue("Session expirée. Reconnecte-toi.");
+            if (status === 403) return thunkAPI.rejectWithValue("Accès refusé.");
+
+            return thunkAPI.rejectWithValue(formatErrorMessage(msg));
         }
     }
 );
@@ -61,6 +91,19 @@ const productSlice = createSlice({
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
+            })
+            .addCase(deleteProduct.pending, (state, action) => {
+                state.deletingId = action.meta.arg;
+                state.deleteError = null;
+            })
+            .addCase(deleteProduct.fulfilled, (state, action: PayloadAction<number>) => {
+                state.items = state.items.filter(item => item.id !== action.payload);
+                state.deletingId = null;
+                state.deleteError = null;
+            })
+            .addCase(deleteProduct.rejected, (state, action) => {
+                state.deletingId = null;
+                state.deleteError = action.payload as string;
             });
     },
 });

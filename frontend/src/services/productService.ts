@@ -28,6 +28,10 @@ const productService = {
         return response.data;
     },
 
+    deleteProduct: async (id: number) => {
+        await api.delete(`/products/${id}`);
+    }
+
 };
 
 export default productService;
