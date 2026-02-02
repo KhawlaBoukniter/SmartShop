@@ -69,7 +69,7 @@ public class CommandeServiceImpl implements CommandeService {
 //                commandeRepository.save(commande);
 //                throw new BusinessException("Produit supprimé: " + product.getName());
 //            }
-//
+            //
 //            if (product.getStock() < itemDTO.getQuantity()) {
 //                commande.setStatus(OrderStatus.REJECTED);
 //                commande.setMontantRestant(BigDecimal.ZERO);
@@ -203,6 +203,13 @@ public class CommandeServiceImpl implements CommandeService {
     @Override
     public List<CommandeDTO> getOrdersByClient(Long clientId) {
         return commandeRepository.findByClient_Id(clientId).stream()
+                .map(commandeMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<CommandeDTO> getAllOrders() {
+        return commandeRepository.findAll().stream()
                 .map(commandeMapper::toDTO)
                 .toList();
     }

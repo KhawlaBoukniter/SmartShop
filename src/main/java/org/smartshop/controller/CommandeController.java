@@ -26,6 +26,11 @@ public class CommandeController {
         return new ResponseEntity<>(commandeService.createOrder(commandeDTO), HttpStatus.CREATED);
     }
 
+    @GetMapping
+    public ResponseEntity<List<CommandeDTO>> getAllOrders() {
+        return ResponseEntity.ok(commandeService.getAllOrders());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CommandeDTO> getOrder(@PathVariable Long id) {
         return ResponseEntity.ok(commandeService.getOrder(id));
