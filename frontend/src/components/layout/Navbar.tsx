@@ -6,7 +6,7 @@ import type { AppDispatch, RootState } from '../../app/store';
 const Navbar = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { user, role } = useSelector((state: RootState) => state.auth);
+    const { role } = useSelector((state: RootState) => state.auth);
 
     const handleLogout = () => {
         dispatch(logoutUser());
@@ -47,11 +47,6 @@ const Navbar = () => {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                {user && (
-                    <span style={{ fontSize: '0.9rem', color: '#888' }}>
-                        {user.name} ({role})
-                    </span>
-                )}
                 <button
                     onClick={handleLogout}
                     style={{
