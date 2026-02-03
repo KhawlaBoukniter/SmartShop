@@ -38,9 +38,19 @@ export interface OrderDTO {
     payments: PaymentDTO[];
 }
 
+export interface CreateOrderDTO {
+    clientId: number;
+    items: { productId: number; quantity: number }[];
+    promoCode?: string | null;
+}
+
 const orderService = {
     getAllOrders: async () => {
         const response = await api.get<OrderDTO[]>('/orders');
+        return response.data;
+    },
+    createOrder: async (data: CreateOrderDTO) => {
+        const response = await api.post<OrderDTO>('/orders', data);
         return response.data;
     },
     getOrder: async (id: number) => {

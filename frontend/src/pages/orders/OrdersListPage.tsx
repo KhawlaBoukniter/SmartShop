@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchOrders } from '../../features/orders/orderSlice';
 import type { RootState, AppDispatch } from '../../app/store';
+import CreateOrderModal from './CreateOrderModal';
 
 const OrdersListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { items, loading, error } = useSelector((state: RootState) => state.orders);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         dispatch(fetchOrders());
@@ -18,7 +20,15 @@ const OrdersListPage = () => {
 
     return (
         <div style={{ padding: '20px' }}>
-            <h2>Commandes</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2>Commandes</h2>
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer' }}
+                >
+                    + Créer une commande
+                </button>
+            </div>
 
             {error && <div style={{ color: 'red', marginBottom: '10px' }}>Global Error: {error}</div>}
 
@@ -52,6 +62,11 @@ const OrdersListPage = () => {
                     </tbody>
                 </table>
             )}
+
+            <CreateOrderModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+            />
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import orderService, { type OrderDTO } from '../../services/orderService';
+import orderService, { type OrderDTO, type CreateOrderDTO } from '../../services/orderService';
 
 interface OrderState {
     items: OrderDTO[];
@@ -8,6 +8,8 @@ interface OrderState {
     error: string | null;
     updating: boolean;
     updateError: string | null;
+    creating: boolean;
+    createError: string | null;
 }
 
 const initialState: OrderState = {
@@ -17,6 +19,8 @@ const initialState: OrderState = {
     error: null,
     updating: false,
     updateError: null,
+    creating: false,
+    createError: null,
 };
 
 export const fetchOrders = createAsyncThunk(
@@ -68,6 +72,18 @@ export const updateOrderStatus = createAsyncThunk(
     }
 );
 
+export const createOrder = createAsyncThunk(
+    'orders/createOrder',
+    async (data: CreateOrderDTO, thunkAPI) => {
+        try {
+            return await orderService.createOrder(data);
+        } catch (error: any) {
+            const msg = error?.response?.data?.message || "Impossible de créer la commande.";
+            return thunkAPI.rejectWithValue(msg);
+        }
+    }
+);
+
 const orderSlice = createSlice({
     name: 'orders',
     initialState,
@@ -112,6 +128,18 @@ const orderSlice = createSlice({
             .addCase(updateOrderStatus.rejected, (state, action) => {
                 state.updating = false;
                 state.updateError = action.payload as string;
+            })
+            .addCase(createOrder.pending, (state) => {
+                state.creating = true;
+                state.createError = null;
+            })
+            .addCase(createOrder.fulfilled, (state, action) => {
+                state.creating = false;
+                state.items.push(action.payload);
+            })
+            .addCase(createOrder.rejected, (state, action) => {
+                state.creating = false;
+                state.createError = action.payload as string;
             });
     },
 });
