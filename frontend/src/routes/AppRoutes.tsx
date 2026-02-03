@@ -10,6 +10,7 @@ import ClientsListPage from '../pages/admin/clients/ClientsListPage';
 import ClientDetailsPage from '../pages/admin/clients/ClientDetailsPage';
 import OrdersListPage from '../pages/orders/OrdersListPage';
 import OrderDetailsPage from '../pages/orders/OrderDetailsPage';
+import MainLayout from '../components/layout/MainLayout';
 
 const AppRoutes: React.FC = () => {
     return (
@@ -22,7 +23,9 @@ const AppRoutes: React.FC = () => {
                     path="/admin"
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN']}>
-                            <AdminDashboard />
+                            <MainLayout>
+                                <AdminDashboard />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -31,7 +34,9 @@ const AppRoutes: React.FC = () => {
                     path="/client"
                     element={
                         <ProtectedRoute allowedRoles={['CLIENT']}>
-                            <ClientDashboard />
+                            <MainLayout>
+                                <ClientDashboard />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -40,7 +45,9 @@ const AppRoutes: React.FC = () => {
                     path="/products"
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN', 'CLIENT']}>
-                            <ProductsListPage />
+                            <MainLayout>
+                                <ProductsListPage />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -49,7 +56,9 @@ const AppRoutes: React.FC = () => {
                     path="/admin/clients"
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN']}>
-                            <ClientsListPage />
+                            <MainLayout>
+                                <ClientsListPage />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -58,7 +67,9 @@ const AppRoutes: React.FC = () => {
                     path="/admin/clients/:id"
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN']}>
-                            <ClientDetailsPage />
+                            <MainLayout>
+                                <ClientDetailsPage />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -67,7 +78,9 @@ const AppRoutes: React.FC = () => {
                     path="/admin/orders"
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN']}>
-                            <OrdersListPage />
+                            <MainLayout>
+                                <OrdersListPage />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
@@ -76,7 +89,9 @@ const AppRoutes: React.FC = () => {
                     path="/admin/orders/:id"
                     element={
                         <ProtectedRoute allowedRoles={['ADMIN']}>
-                            <OrderDetailsPage />
+                            <MainLayout>
+                                <OrderDetailsPage />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />
