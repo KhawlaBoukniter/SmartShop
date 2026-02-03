@@ -41,7 +41,7 @@ public class AuthFilter extends OncePerRequestFilter {
         if (origin != null) {
             response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
             response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,PUT,DELETE,OPTIONS");
+            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,PUT,PATCH,DELETE,OPTIONS");
             response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization");
             response.setHeader(HttpHeaders.VARY, "Origin");
         }
