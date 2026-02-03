@@ -1,20 +1,39 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchOrder } from '../../features/orders/orderSlice';
+import { fetchOrder, updateOrderStatus } from '../../features/orders/orderSlice';
 import type { RootState, AppDispatch } from '../../app/store';
 
 const OrderDetailsPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
-    const { selectedOrder, loading, error } = useSelector((state: RootState) => state.orders);
+    const { selectedOrder, loading, error, updating, updateError } = useSelector((state: RootState) => state.orders);
+
+    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState('');
 
     useEffect(() => {
         if (id) {
             dispatch(fetchOrder(Number(id)));
         }
     }, [dispatch, id]);
+
+    useEffect(() => {
+        if (selectedOrder) {
+            setSelectedStatus(selectedOrder.status);
+        }
+    }, [selectedOrder]);
+
+    const handleUpdateStatus = () => {
+        if (selectedOrder && selectedStatus) {
+            dispatch(updateOrderStatus({ id: selectedOrder.id, status: selectedStatus })).then((action) => {
+                if (updateOrderStatus.fulfilled.match(action)) {
+                    setIsStatusModalOpen(false);
+                }
+            });
+        }
+    };
 
     if (loading) return <div>Chargement de la commande...</div>;
     if (error) return (
@@ -25,11 +44,17 @@ const OrderDetailsPage = () => {
     );
     if (!selectedOrder) return <div>Commande introuvable</div>;
 
+    const availableStatuses = ['CONFIRMED', 'CANCELED', 'REJECTED'];
+
     return (
         <div style={{ padding: '20px' }}>
-            <button onClick={() => navigate('/admin/orders')} style={{ marginBottom: '20px' }}>Retour</button>
-
-            <h2>Détail Commande #{selectedOrder.id}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <button onClick={() => navigate('/admin/orders')}>Retour</button>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <h2>Détail Commande #{selectedOrder.id}</h2>
+                    <button onClick={() => setIsStatusModalOpen(true)}>Changer Statut</button>
+                </div>
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
                 <div style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
@@ -100,6 +125,41 @@ const OrderDetailsPage = () => {
                         </tbody>
                     </table>
                 </>
+            )}
+
+            {isStatusModalOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}>
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '300px' }}>
+                        <h3>Changer le Statut</h3>
+                        <p>Statut actuel: <strong>{selectedOrder.status}</strong></p>
+
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>Nouveau statut:</label>
+                            <select
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                style={{ width: '100%', padding: '8px' }}
+                            >
+                                <option value="">Sélectionner un statut</option>
+                                {availableStatuses.map(status => (
+                                    <option key={status} value={status}>{status}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {updateError && <div style={{ color: 'red', marginBottom: '10px' }}>{updateError}</div>}
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                            <button onClick={() => setIsStatusModalOpen(false)}>Annuler</button>
+                            <button onClick={handleUpdateStatus} disabled={updating || !selectedStatus}>
+                                {updating ? 'Enregistrement...' : 'Enregistrer'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

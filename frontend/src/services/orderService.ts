@@ -46,6 +46,15 @@ const orderService = {
     getOrder: async (id: number) => {
         const response = await api.get<OrderDTO>(`/orders/${id}`);
         return response.data;
+    },
+    confirmOrder: async (id: number) => {
+        await api.patch(`/orders/${id}/confirm`);
+    },
+    cancelOrder: async (id: number) => {
+        await api.patch(`/orders/${id}/cancel`);
+    },
+    rejectOrder: async (id: number) => {
+        await api.patch(`/orders/${id}/reject`);
     }
 };
 

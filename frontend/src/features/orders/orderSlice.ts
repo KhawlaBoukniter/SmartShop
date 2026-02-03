@@ -6,6 +6,8 @@ interface OrderState {
     selectedOrder: OrderDTO | null;
     loading: boolean;
     error: string | null;
+    updating: boolean;
+    updateError: string | null;
 }
 
 const initialState: OrderState = {
@@ -13,6 +15,8 @@ const initialState: OrderState = {
     selectedOrder: null,
     loading: false,
     error: null,
+    updating: false,
+    updateError: null,
 };
 
 export const fetchOrders = createAsyncThunk(
@@ -34,6 +38,31 @@ export const fetchOrder = createAsyncThunk(
             return await orderService.getOrder(id);
         } catch (error: any) {
             const msg = error?.response?.data?.message || "Impossible de récupérer la commande.";
+            return thunkAPI.rejectWithValue(msg);
+        }
+    }
+);
+
+export const updateOrderStatus = createAsyncThunk(
+    'orders/updateStatus',
+    async ({ id, status }: { id: number; status: string }, thunkAPI) => {
+        try {
+            switch (status) {
+                case 'CONFIRMED':
+                    await orderService.confirmOrder(id);
+                    break;
+                case 'CANCELED':
+                    await orderService.cancelOrder(id);
+                    break;
+                case 'REJECTED':
+                    await orderService.rejectOrder(id);
+                    break;
+                default:
+                    throw new Error("Statut non supporté via cette action.");
+            }
+            return status;
+        } catch (error: any) {
+            const msg = error?.response?.data?.message || error.message || "Impossible de mettre à jour le statut.";
             return thunkAPI.rejectWithValue(msg);
         }
     }
@@ -69,6 +98,20 @@ const orderSlice = createSlice({
             .addCase(fetchOrder.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
+            })
+            .addCase(updateOrderStatus.pending, (state) => {
+                state.updating = true;
+                state.updateError = null;
+            })
+            .addCase(updateOrderStatus.fulfilled, (state, action) => {
+                state.updating = false;
+                if (state.selectedOrder) {
+                    state.selectedOrder.status = action.payload;
+                }
+            })
+            .addCase(updateOrderStatus.rejected, (state, action) => {
+                state.updating = false;
+                state.updateError = action.payload as string;
             });
     },
 });
